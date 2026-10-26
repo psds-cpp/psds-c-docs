@@ -1,0 +1,46 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{terminal}
+
+\RequirePackage{minted}
+\RequirePackage[minted]{tcolorbox}
+
+\SetupKeyvalOptions{
+    family=TRM,
+    prefix=TRM@
+}
+
+\DeclareStringOption[\normalsize]{fontsize}
+\DeclareStringOption[0mm]{bskip}
+\DeclareStringOption[0mm]{askip}
+
+\ProcessKeyvalOptions*
+\newcommand{\shellprompt}{>}
+\newcommand{\shellcommand}[1]{\shellprompt \space \textbf{#1}}
+
+\NewTCBListing{terminalwindow}{ O{!!} O{} }{
+    listing engine=minted,
+    title=>\_\null\hfill x,
+    minted options={
+        fontsize=\TRM@fontsize,
+        breaklines,
+        breakanywhere,
+        escapeinside=#1,
+        breaksymbolleft=
+    },
+    minted language=text,
+    listing only,
+    left skip=0mm,
+    right skip=0mm,
+    after skip=\TRM@askip,
+    before skip=\TRM@bskip,
+    left=0mm,
+    right=0mm,
+    top=0mm,
+    bottom=0mm,
+    boxrule=0.02cm,
+    colback=white,
+    colframe=black,
+    colbacktitle=black,
+    fonttitle=\ttfamily\TRM@fontsize,
+    #2
+}

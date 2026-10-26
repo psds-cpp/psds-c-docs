@@ -1,0 +1,69 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{mylisting}
+
+\RequirePackage{minted}
+\RequirePackage[minted]{tcolorbox}
+\RequirePackage{kvoptions}
+\RequirePackage{accsupp}
+
+\SetupKeyvalOptions{
+    family=MLS,
+    prefix=MLS@
+}
+
+\DeclareStringOption[\normalsize]{fontsize}
+\DeclareStringOption[\footnotesize]{linenosfontsize}
+\DeclareStringOption[0mm]{bskip}
+\DeclareStringOption[0mm]{askip}
+
+\ProcessKeyvalOptions*
+
+\newcommand{\HideFromCopy}[1]{%
+    \BeginAccSupp{ActualText={}}#1\EndAccSupp{}%
+}
+
+\renewcommand{\theFancyVerbLine}{
+    \HideFromCopy{\MLS@linenosfontsize\ttfamily\textcolor{gray}{\arabic{FancyVerbLine}}}
+}
+
+\tcbset{
+    listingbase/.style={
+        listing engine=minted,
+        minted options={
+            fontsize=\MLS@fontsize,
+            breaklines,
+            breakanywhere,
+            linenos,
+            escapeinside=||,
+            numbersep=2pt
+        },
+        listing only,
+        left skip=0mm,
+        right skip=0mm,
+        after skip=\MLS@askip,
+        before skip=\MLS@bskip,
+        left=0mm,
+        right=0mm,
+        top=0mm,
+        bottom=0mm,
+        boxrule=0.02cm,
+        colback=white,
+        colframe=black,
+        colbacktitle=gray!10!white,
+        coltitle=black,
+        sharp corners
+    }
+}
+
+\newtcbinputlisting{\myinputlisting}[3][]{%
+    listing file={#2#3},
+    title=#3,
+    fonttitle=\it\MLS@fontsize,
+    listingbase,
+    #1
+}
+
+\newtcblisting{myinplacelisting}[1][]{%
+    listingbase,
+    #1
+}
