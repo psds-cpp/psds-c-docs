@@ -37,8 +37,8 @@
 
       buildPhase = ''
         runHook preBuild
-        mkdir -p $out
-        touch $out/dummy
+        mkdir -p $out/presentations
+        touch $out/presentations/dummy
         runHook postBuild
       '';
 
