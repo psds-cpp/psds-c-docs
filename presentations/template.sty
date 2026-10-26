@@ -1,0 +1,56 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{presentationtemplate}
+
+% packages
+\usepackage[main=russian,english]{babel}
+\usepackage{hyperref}
+\usepackage[export]{adjustbox}
+\usepackage{fontspec}
+
+% fonts
+\setsansfont[
+    Path=/workdir/Fonts/dejavu-sans/,
+    BoldFont=DejaVuSans-Bold.ttf,
+    ItalicFont=DejaVuSans-Oblique.ttf,
+    BoldItalicFont=DejaVuSans-BoldOblique.ttf,
+]{DejaVuSans.ttf}
+\setmonofont[
+    Path=/workdir/Fonts/Fira-Mono/,
+    BoldFont=FiraMono-Medium.ttf,
+]{FiraMono-Regular.ttf}
+
+% set hyperlinks style
+\hypersetup{
+    colorlinks=true,
+    linkcolor=blue,
+    filecolor=magenta,
+    urlcolor=cyan,
+}
+
+% beamer template settings
+\beamertemplatenavigationsymbolsempty
+\setbeamertemplate{headline}{}
+
+% add logos on title slide
+\titlegraphic{\includegraphics[scale=0.3,valign=t]{Presentations/images/prosoft-logo.png}}
+
+% add logos on regular slides
+\logo{
+    \begin{tikzpicture}[overlay,remember picture]
+        \node[left=0.2cm] at (current page.32){
+            \includegraphics[scale=0.15,valign=t]{Presentations/images/prosoft-logo.png}
+        };
+    \end{tikzpicture}
+}
+
+% add slide numbers
+\setbeamertemplate{footline}[frame number]
+
+% title slide content (except current topic)
+\author{
+    Пыхов~Олег~Александрович \\
+    \texttt{o.pyhov@prosoftsystems.ru}
+}
+\institute{ООО~"Прософт-Системы"}
+\date{2024}
+
