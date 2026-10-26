@@ -1,9 +1,24 @@
 ---
 name: new-presentation
-description: Рецепт добавления новой презентации в psds-c-docs — структура beamer-источника, подключение к Makefile (build/help/install), сборка через make в nix develop и финальная проверка nix build. Use when creating, adding or updating a presentation, editing its Makefile targets, or debugging the pdf build.
+description: Рецепт добавления новой презентации в psds-c-docs — конвейер (план с согласованием с пользователем → текст → LaTeX + Makefile → сборка), структура beamer-источника, подключение к Makefile (build/help/install), сборка через make в nix develop и финальная проверка nix build. Use when creating, adding or updating a presentation, editing its Makefile targets, or debugging the pdf build.
 ---
 
 # Новая презентация psds-c-docs
+
+## 0. Конвейер
+
+Новая презентация создаётся только по конвейеру (управляет `pm`):
+
+1. **План** — `c-expert` готовит план тем и примеров
+   → `build/drafts/<NN-name>.plan.md`.
+2. **Согласование** — `pm` показывает план пользователю и получает
+   утверждение (замечания → `c-expert` дорабатывает план, согласование
+   повторяется). Без утверждённого плана конвейер не продолжается.
+3. **Текст** — `c-expert` пишет текст по слайдам по согласованному
+   плану → `build/drafts/<NN-name>.md`.
+4. **Сборка** — `latex-dev`: каркас (раздел 1) + Makefile (раздел 2)
+   + `make` до успеха (раздел 3).
+5. **Проверка** — `pm`: `nix build` + содержимое `result/presentations/`.
 
 ## 1. Каркас
 
