@@ -28,6 +28,10 @@
 - Не менять общие ресурсы (`presentations/presentationtemplate.sty`,
   `packages/*.sty`, `fonts/`, `Makefile` в целом) без необходимости;
   при добавлении презентации в Makefile правятся только её цели.
+- **Фиксировать конвенции.** Любая новая проектная договорённость
+  (структура, стиль, параметры сборки) сразу записывается в этот файл, а
+  при касательстве к созданию/сборке презентаций — также в соответствующий
+  скилл `.opencode/skills/`. Не ждать отдельной просьбы.
 
 ## Роли и конвейер (субагенты)
 
@@ -58,8 +62,10 @@
 - Директория `presentations/<NN-name>/`: NN — следующий номер серии
   (текущий максимум + 1), name — kebab-case (пример: `02-pointers`).
 - Основной файл — `<name>.tex`; образец: `presentations/01-intro/intro.tex`
-  (`\documentclass[compress]{beamer}` + `presentationtemplate` +
-  `\subtitle{...}` + фреймы).
+  (`\documentclass[compress,aspectratio=169]{beamer}` + `presentationtemplate` +
+  `\subtitle{...}` + фреймы). Слайды — 16:9: опция `aspectratio=169`
+  обязательна в `documentclass` каждой презентации (из шаблонного пакета
+  задать нельзя — beamer закрывает `papersize` для `\newgeometry`).
 - Примеры кода на C — файлы `.c`/`.h` в директории презентации;
   вставляются через `\myinputlisting[minted language=c]{presentations/<NN-name>}/<file>`
   (пакет `mylisting`), короткие фрагменты — `\myinplacelisting`.

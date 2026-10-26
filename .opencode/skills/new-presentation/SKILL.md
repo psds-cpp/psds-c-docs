@@ -13,7 +13,9 @@ description: Рецепт добавления новой презентации
 
 Структура `.tex`:
 
-- `\documentclass[compress]{beamer}`
+- `\documentclass[compress,aspectratio=169]{beamer}` — слайды 16:9;
+  опция `aspectratio=169` обязательна (из `presentationtemplate` задать
+  нельзя: beamer не даёт менять `papersize` через `\newgeometry`)
 - `\usepackage{presentationtemplate}` — шрифты, логотипы, автор, дата
   уже заданы в шаблоне; повторно объявлять нельзя
 - `\usepackage[fontsize=\footnotesize, askip=3mm]{terminal}` и
