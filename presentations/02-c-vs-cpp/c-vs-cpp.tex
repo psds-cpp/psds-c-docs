@@ -1,0 +1,497 @@
+% !TeX TS-program = xelatex
+
+\documentclass[compress,aspectratio=169]{beamer}
+
+\usepackage{presentationtemplate}
+\usepackage[fontsize=\footnotesize, linenosfontsize=\tiny, askip=3mm]{mylisting}
+\usepackage{myitemize}
+\usepackage{emoji}
+
+\title{Сравнение C и C++}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+
+\begin{frame}
+
+    \frametitle{Зачем C, если есть C++}
+
+    \begin{myitemize}
+
+        \item C проще, чем C++: нет классов, исключений,
+            конструкторов и перегрузки.
+
+        \item Рантайм C компактнее и универсальнее, чем
+            рантайм C++.
+
+        \item На C написано большое число проектов. Примеры:
+            ядро Linux, SQLite, Nginx, Git.
+
+    \end{myitemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Один и тот же struct в двух языках}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/02-c-vs-cpp/}
+                {struct_c.c}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=cpp]
+                {presentations/02-c-vs-cpp/}
+                {struct_cpp.cpp}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Ключевое слово struct — обязательно}
+
+    \begin{myitemize}
+
+        \item В C ключевое слово \texttt{struct} входит в
+            тип переменной.
+
+        \item Распространено создание псевдонима типа
+            через \texttt{typedef}.
+
+    \end{myitemize}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c]{C}
+struct Point { int x, y; };
+
+// struct обязателен
+struct Point p;
+
+typedef struct Point Point;
+// создали псевдоним Point
+Point q;
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c++]{C++}
+struct Point { int x, y; };
+
+// в C++ псевдоним
+// создавать необязательно
+Point p;
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{\texttt{void*} и приведения типов}
+
+    В C \texttt{void*} неявно приводится к любому указателю
+    на объект (и обратно).
+    В C++ для этого требуется именованное преобразование
+    \texttt{static\_cast}.
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/02-c-vs-cpp/}
+                {malloc_c.c}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=c++]
+                {presentations/02-c-vs-cpp/}
+                {malloc_cpp.cpp}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{\texttt{NULL} и \texttt{nullptr}, ссылки}
+
+    \begin{myitemize}
+
+        \item Нулевой указатель: в C — макрос \texttt{NULL},
+        в C++ — типизированный \texttt{nullptr} (C++11).
+
+        \item Ссылок в C нет.
+
+    \end{myitemize}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c]{C}
+int *p = NULL;
+
+// ссылок нет
+void swap(int *a, int *b);
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c++]{C++}
+int *p = nullptr;
+
+// ссылки есть
+void swap(int &a, int &b);
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Область видимости констант перечислений}
+
+    \begin{myitemize}
+
+        \item В C константы перечислений живут в области, где объявленo
+        перечисление. Конфликт имен приведет к ошибке компиляции.
+
+        \item В C++ область видимости констант ограничена перечислением.
+
+    \end{myitemize}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c++]{C}
+enum Color { RED, GREEN };
+
+// error: ‘RED’ redeclared
+// as different kind of symbol
+int RED = 5;
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c++]{C++}
+enum Color { RED, GREEN };
+
+// нет ошибки
+int RED = 5;
+
+enum class Color2 { RED };
+int a = Color2::RED;
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{bool и псевдонимы типов}
+
+    \begin{myitemize}
+
+        \item В C типа \texttt{bool} нет в языке: только
+        \texttt{\_Bool} + заголовок \texttt{<stdbool.h>} (C99),
+        который вводит макросы \texttt{bool}, \texttt{true},
+        \texttt{false}.
+
+        \item В C++ \texttt{bool} — встроенный тип языка.
+
+        \item Именованные типы: механизм один и тот же,
+        в C пишут \texttt{typedef}, в C++ принято \texttt{using}.
+
+    \end{myitemize}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c]{C}
+#include <stdbool.h>
+// bool и true - макросы
+// из stdbool.h
+bool ok = true;
+
+// псевдоним типа
+typedef unsigned int uint;
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c++]{C++}
+// заголовочного файла
+// не требуется
+bool ok = true;
+
+// почти равнозначно
+using uint0 = unsigned int;
+typedef unsigned int uint1;
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Инициализация: значений по умолчанию в C нет}
+
+    \begin{myitemize}
+
+        \item В C поля структуры не имеют значений по умолчанию.
+
+        \item В C++ для этого есть конструктор (начиная с C++11
+            можно использовать default member initializers).
+
+    \end{myitemize}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/02-c-vs-cpp/}
+                {config_c.c}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=c++]
+                {presentations/02-c-vs-cpp/}
+                {config_cpp.cpp}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{\texttt{malloc} и \texttt{new}}
+
+    \begin{myitemize}
+
+        \item \texttt{malloc} — функция: возвращает
+            \texttt{void*}, при нехватке памяти — \texttt{NULL}.
+
+        \item \texttt{new} — оператор: возвращает указатель
+            нужного типа, при нехватке — исключение
+            \texttt{std::bad\_alloc}.
+
+        \item \texttt{malloc} возвращает указатель на выделенную
+            память, \texttt{new} предварительно вызовет конструктор.
+
+    \end{myitemize}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c]{C++}
+int *a = malloc(10 * sizeof *a);
+if (!a) { /* обработка ошибки */ }
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c++]{C}
+// может бросить исключение
+// std::bad_alloc
+int *a = new int[10];
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Перегрузка функций}
+
+    Её в C нет \emoji{slightly-smiling-face}.
+
+    \bigskip
+
+    \begin{myinplacelisting}[minted language=c]
+// ошибка компиляции
+// error: conflicting types for ‘foo’
+int foo();
+void foo();
+    \end{myinplacelisting}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Префиксы вместо пространства имен}
+
+    \begin{myitemize}
+
+        \item В C конфликты имен решаются префиксами-конвенциями.
+
+        \item В C++ — \texttt{namespace}: имена «упаковываются»
+        в модуль, конфликты исключаются по построению.
+
+    \end{myitemize}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c]{C++}
+int mylib_push(List *l, int v);
+void mylib_free(List *l);
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c++]{C}
+namespace mylib {
+bool push(List &l, int v);
+void free(List &l);
+}
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Макросы для кодогонерации}
+
+    \begin{myitemize}
+
+        \item В C нет шаблонов. Кодогенерация возможна
+            только засчет препроцессора.
+            Макрос подставляет аргументы текстом.
+
+        \item Шаблонная функция в C++ — обычный вызов: аргументы
+            вычисляются один раз, тип выводится компилятором.
+
+    \end{myitemize}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/02-c-vs-cpp/}
+                {max_c.c}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=c++]
+                {presentations/02-c-vs-cpp/}
+                {max_cpp.cpp}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Ошибки: коды возврата и исключения}
+
+    В C нет исключений. Функции могут сообщать об
+    ошибке только через вовзрат значений или запись
+    в определенный участок памяти.
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/02-c-vs-cpp/}
+                {err_c.c}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=c++]
+                {presentations/02-c-vs-cpp/}
+                {err_cpp.cpp}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{Что даёт знание C}
+
+    \begin{myitemize}
+
+        \item Контроль над памятью и понимание того, что происходит
+            «под капотом» C++.
+
+        \item Умение читать системный и легаси-код: ядра,
+            драйверы, библиотеки.
+
+        \item Понимание, чем C++ «платит» за удобство: каждая
+            функциональность (конструкторы, исключения) имеет цену.
+
+    \end{myitemize}
+
+\end{frame}
+
+\end{document}

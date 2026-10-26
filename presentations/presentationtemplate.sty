@@ -7,6 +7,9 @@
 \usepackage[export]{adjustbox}
 \usepackage{fontspec}
 
+\RequirePackage{tikz}
+\usetikzlibrary{positioning}
+
 % fonts
 \setsansfont[
     Path=fonts/dejavu-sans/,
@@ -30,6 +33,8 @@
 % beamer template settings
 \beamertemplatenavigationsymbolsempty
 \setbeamertemplate{headline}{}
+\setbeamertemplate{itemize items}[circle]
+\setbeamertemplate{footline}[frame number]
 
 % add logos on title slide
 \titlegraphic{
@@ -39,17 +44,14 @@
 % add logos on regular slides
 \logo{
     \begin{tikzpicture}[overlay,remember picture]
-        \node[left=0.2cm] at (current page.32){
+        \node[below left=0.3cm and 0.3cm] at (current page.north east){
             \includegraphics[scale=0.15,valign=t]{presentations/images/prosoft-logo.png}
         };
     \end{tikzpicture}
 }
 
-% add slide numbers
-\setbeamertemplate{footline}[frame number]
-
 % title slide content (except current topic)
-\subtitle{Введение в разработку на C++}
+\subtitle{Введение в разработку на C}
 \author{Пыхов~Олег~Александрович \\ \texttt{pyhovoleg31@gmail.com}}
 \institute{
     ООО~"Прософт-Системы"

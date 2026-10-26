@@ -57,7 +57,7 @@
 
 \newtcbinputlisting{\myinputlisting}[3][]{%
     listing file={#2#3},
-    title=#3,
+    title=\detokenize{#3},
     fonttitle=\it\MLS@fontsize,
     listingbase,
     #1
@@ -65,5 +65,24 @@
 
 \newtcblisting{myinplacelisting}[1][]{%
     listingbase,
+    #1
+}
+
+\NewTCBListing{mycppinplacelisting}{!O{}}{%
+    listingbase,
+    minted language=cpp,
+    #1
+}
+
+\newtcblisting{mytitledinplacelisting}[2][]{%
+    listingbase,
+    title=\detokenize{#2},
+    #1
+}
+
+\NewTCBListing{mycpptitledinplacelisting}{O{}m}{%
+    listingbase,
+    minted language=cpp,
+    title=\detokenize{#2},
     #1
 }
