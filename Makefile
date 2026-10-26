@@ -46,6 +46,6 @@ endef
 
 01-intro.pdf: \
 	presentations/01-intro/intro.tex \
-	$(wildcard presentations/01-Intro/*.cpp) \
-	$(wildcard presentations/01-Intro/*.h)
+	$(wildcard presentations/01-intro/*.c) \
+	$(wildcard presentations/01-intro/*.h)
 	$(call generate_pdf,$<,$@)

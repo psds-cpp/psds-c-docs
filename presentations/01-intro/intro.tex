@@ -6,194 +6,31 @@
 \usepackage[fontsize=\footnotesize, askip=3mm]{terminal}
 \usepackage[fontsize=\footnotesize, linenosfontsize=\tiny, askip=3mm]{mylisting}
 
-\subtitle{Введение}
+\subtitle{Введение в язык C}
 
 \begin{document}
 
 \frame[plain]{\titlepage}
 
-\begin{frame}
-
-    \frametitle{Темы курса}
-
-    \begin{itemize}
-
-        \item Компиляция и тулчейн
-
-            \begin{itemize}
-
-                \item Фазы трансляции
-
-                \item Системы сборки
-
-                \item Кросс-компиляция
-
-                \item Управление зависимостями
-
-                \item Отладка
-
-                \item Совместимость с C
-
-            \end{itemize}
-
-        \item Типы объектов
-
-            \begin{itemize}
-
-                \item Фундаментальные типы
-
-                \item Квалификаторы типов
-
-                \item Операции и операторы
-
-                \item Приведение типов
-
-            \end{itemize}
-
-    \end{itemize}
-
-\end{frame}
-
-\begin{frame}
-
-    \frametitle{Темы курса}
-
-    \begin{itemize}
-
-        \item Поток управления: условия и циклы
-
-        \item Указатели, ссылки и работа с памятью
-
-        \item Массивы
-
-        \item Функции
-
-            \begin{itemize}
-
-                \item Сигнатура функции
-
-                \item Объявление и определение функции
-
-                \item Рекурсия
-
-                \item Перегрузка функций
-
-                \item Лямбда-функции
-
-            \end{itemize}
-
-    \end{itemize}
-
-\end{frame}
-
-\begin{frame}
-
-    \frametitle{Темы курса}
-
-    \begin{itemize}
-
-        \item Пространства имен
-
-        \item Классы
-
-            \begin{itemize}
-
-                \item Поля и методы класса, конструкторы и деструкторы,
-                    время жизни объектов, инициализация
-
-                \item \texttt{const}, \texttt{mutable}, статические поля и методы
-
-                \item Наследование
-
-                \item Полиморфизм
-
-                \item RAII
-
-                \item Move-семантика
-
-            \end{itemize}
-
-    \end{itemize}
-
-\end{frame}
-
-\begin{frame}
-
-    \frametitle{Темы курса}
-
-    \begin{itemize}
-
-        \item Исключения и обработка ошибок
-
-        \item Шаблоны и статический полиморфизм
-
-        \item Стандартная библиотека
-
-            \begin{itemize}
-
-                \item Строки, потоки ввода-вывода, работа с файлами
-
-                \item Контейнеры
-
-                \item Итераторы
-
-                \item Алгоритмы
-
-                \item Умные указатели
-
-            \end{itemize}
-
-    \end{itemize}
-
-\end{frame}
-
-\begin{frame}
-
-    \frametitle{Темы курса}
-
-    \begin{itemize}
-
-        \item Потоки и примитивы синхронизации
-
-        \item Вычисления времени компиляции
-
-        \item Универсальные ссылки
-
-        \item Прикладное программирование:
-
-            \begin{itemize}
-
-                \item Программирование микроконтроллеров
-
-                \item Программирования GUI приложений (Qt)
-
-                \item Юнит-тесты (GTest)
-
-            \end{itemize}
-
-    \end{itemize}
-
-\end{frame}
-
 \begin{frame}[fragile]
 
     \frametitle{Hello, world!}
 
-    \myinputlisting[minted language=cpp]
+    \myinputlisting[minted language=c]
         {presentations/01-intro/}
-        {hello-world.cpp}
+        {hello-world.c}
 
     \begin{terminalwindow}[||]
-|\shellcommand{g++ hello-world.cpp}|
+|\shellcommand{gcc hello-world.c}|
 |\shellcommand{./a.out}|
-Hello, World!
+Hello, world!
     \end{terminalwindow}
 
 \end{frame}
 
 \begin{frame}[fragile]
 
-    \frametitle{Стандарты языка C++}
+    \frametitle{Стандарты языка C}
 
     \begin{columns}
 
@@ -201,14 +38,12 @@ Hello, World!
 
             \begin{itemize}
 
-                \item C++98
-                \item C++03
-                \item C++11/C++0x
-                \item C++14
-                \item C++17
-                \item C++20
-                \item C++23
-                \item C++26 (еще не выпущен)
+                \item C89/C90
+                \item C99
+                \item C11
+                \item C17
+                \item C23
+                \item C2x (еще не выпущен)
 
             \end{itemize}
 
@@ -216,22 +51,17 @@ Hello, World!
 
         \begin{column}{0.6\textwidth}
 
-            \begin{myinplacelisting}[minted language=cpp]
-auto i = 3.14; // C++11
+            \begin{myinplacelisting}[minted language=c]
+// C99
+for (int i = 0; i < 10; i++) {
+}
 
-// C++14
-auto glambda = [] (auto a) {
-    return a;
-};
+// C11
+_Atomic int counter;
+static_assert(sizeof(int) >= 4, "");
 
-// C++17
-void f([[maybe_unused]] int a);
-
-// C++20
-bool c = a <=> b;
-
-// C++23
-std::format("i={}\n", i);
+// C23
+const char data[] = #embed "image.png";
             \end{myinplacelisting}
         \end{column}
 
@@ -245,22 +75,17 @@ std::format("i={}\n", i);
 
     \begin{enumerate}
 
-        \item \url{https://en.cppreference.com/w/}
+        \item \url{https://en.cppreference.com/c}
 
-        \item \url{https://cplusplus.com/}
+        \item Brian Kernighan, Dennis Ritchie: The C Programming Language
 
-        \item Bjarne Stroustrup: The C++ Programming Language
+        \item Samuel Harbison, Guy Steele: C: A Reference Manual
 
-        \item Scott Meyers: Effective Modern C++
+        \item \url{https://open-std.org/jtc1/sc22/wg14/}
 
-        \item \url{https://isocpp.org/}
+        \item Working Draft, Standard for Programming Language C
 
-        \item \href{http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines}{C++ Core Guidelines}
-
-        \item Working Draft, Standard for Programming Language C++
-
-        \item \href{https://www.youtube.com/@lectory\_fpmi}
-            {Лекции преподавателя ФПМИ Ильи Мещерина}
+        \item \url{https://gcc.gnu.org/onlinedocs/}
 
     \end{enumerate}
 
