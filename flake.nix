@@ -37,13 +37,15 @@
 
       buildPhase = ''
         runHook preBuild
-        mkdir -p $out/presentations
-        touch $out/presentations/dummy
+        make clean
+        make -j"$NIX_BUILD_CORES"
         runHook postBuild
       '';
 
       installPhase = ''
         runHook preInstall
+        mkdir -p "$out"
+        make install PREFIX="$out"
         runHook postInstall
       '';
 

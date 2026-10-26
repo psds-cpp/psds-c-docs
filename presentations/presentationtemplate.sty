@@ -9,13 +9,13 @@
 
 % fonts
 \setsansfont[
-    Path=/workdir/Fonts/dejavu-sans/,
+    Path=fonts/dejavu-sans/,
     BoldFont=DejaVuSans-Bold.ttf,
     ItalicFont=DejaVuSans-Oblique.ttf,
     BoldItalicFont=DejaVuSans-BoldOblique.ttf,
 ]{DejaVuSans.ttf}
 \setmonofont[
-    Path=/workdir/Fonts/Fira-Mono/,
+    Path=fonts/Fira-Mono/,
     BoldFont=FiraMono-Medium.ttf,
 ]{FiraMono-Regular.ttf}
 
@@ -32,13 +32,15 @@
 \setbeamertemplate{headline}{}
 
 % add logos on title slide
-\titlegraphic{\includegraphics[scale=0.3,valign=t]{Presentations/images/prosoft-logo.png}}
+\titlegraphic{
+    \includegraphics[scale=0.3,valign=t]{presentations/images/prosoft-logo.png}
+}
 
 % add logos on regular slides
 \logo{
     \begin{tikzpicture}[overlay,remember picture]
         \node[left=0.2cm] at (current page.32){
-            \includegraphics[scale=0.15,valign=t]{Presentations/images/prosoft-logo.png}
+            \includegraphics[scale=0.15,valign=t]{presentations/images/prosoft-logo.png}
         };
     \end{tikzpicture}
 }
@@ -47,10 +49,9 @@
 \setbeamertemplate{footline}[frame number]
 
 % title slide content (except current topic)
-\author{
-    Пыхов~Олег~Александрович \\
-    \texttt{o.pyhov@prosoftsystems.ru}
+\subtitle{Введение в разработку на C++}
+\author{Пыхов~Олег~Александрович \\ \texttt{pyhovoleg31@gmail.com}}
+\institute{
+    ООО~"Прософт-Системы"
 }
-\institute{ООО~"Прософт-Системы"}
-\date{2024}
-
+\date{\the\year{}}

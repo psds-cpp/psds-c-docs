@@ -1,0 +1,269 @@
+% !TeX TS-program = xelatex
+
+\documentclass[compress]{beamer}
+
+\usepackage{presentationtemplate}
+\usepackage[fontsize=\footnotesize, askip=3mm]{terminal}
+\usepackage[fontsize=\footnotesize, linenosfontsize=\tiny, askip=3mm]{mylisting}
+
+\subtitle{Введение}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+
+\begin{frame}
+
+    \frametitle{Темы курса}
+
+    \begin{itemize}
+
+        \item Компиляция и тулчейн
+
+            \begin{itemize}
+
+                \item Фазы трансляции
+
+                \item Системы сборки
+
+                \item Кросс-компиляция
+
+                \item Управление зависимостями
+
+                \item Отладка
+
+                \item Совместимость с C
+
+            \end{itemize}
+
+        \item Типы объектов
+
+            \begin{itemize}
+
+                \item Фундаментальные типы
+
+                \item Квалификаторы типов
+
+                \item Операции и операторы
+
+                \item Приведение типов
+
+            \end{itemize}
+
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{Темы курса}
+
+    \begin{itemize}
+
+        \item Поток управления: условия и циклы
+
+        \item Указатели, ссылки и работа с памятью
+
+        \item Массивы
+
+        \item Функции
+
+            \begin{itemize}
+
+                \item Сигнатура функции
+
+                \item Объявление и определение функции
+
+                \item Рекурсия
+
+                \item Перегрузка функций
+
+                \item Лямбда-функции
+
+            \end{itemize}
+
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{Темы курса}
+
+    \begin{itemize}
+
+        \item Пространства имен
+
+        \item Классы
+
+            \begin{itemize}
+
+                \item Поля и методы класса, конструкторы и деструкторы,
+                    время жизни объектов, инициализация
+
+                \item \texttt{const}, \texttt{mutable}, статические поля и методы
+
+                \item Наследование
+
+                \item Полиморфизм
+
+                \item RAII
+
+                \item Move-семантика
+
+            \end{itemize}
+
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{Темы курса}
+
+    \begin{itemize}
+
+        \item Исключения и обработка ошибок
+
+        \item Шаблоны и статический полиморфизм
+
+        \item Стандартная библиотека
+
+            \begin{itemize}
+
+                \item Строки, потоки ввода-вывода, работа с файлами
+
+                \item Контейнеры
+
+                \item Итераторы
+
+                \item Алгоритмы
+
+                \item Умные указатели
+
+            \end{itemize}
+
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{Темы курса}
+
+    \begin{itemize}
+
+        \item Потоки и примитивы синхронизации
+
+        \item Вычисления времени компиляции
+
+        \item Универсальные ссылки
+
+        \item Прикладное программирование:
+
+            \begin{itemize}
+
+                \item Программирование микроконтроллеров
+
+                \item Программирования GUI приложений (Qt)
+
+                \item Юнит-тесты (GTest)
+
+            \end{itemize}
+
+    \end{itemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Hello, world!}
+
+    \myinputlisting[minted language=cpp]
+        {presentations/01-intro/}
+        {hello-world.cpp}
+
+    \begin{terminalwindow}[||]
+|\shellcommand{g++ hello-world.cpp}|
+|\shellcommand{./a.out}|
+Hello, World!
+    \end{terminalwindow}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Стандарты языка C++}
+
+    \begin{columns}
+
+        \begin{column}{0.4\textwidth}
+
+            \begin{itemize}
+
+                \item C++98
+                \item C++03
+                \item C++11/C++0x
+                \item C++14
+                \item C++17
+                \item C++20
+                \item C++23
+                \item C++26 (еще не выпущен)
+
+            \end{itemize}
+
+        \end{column}
+
+        \begin{column}{0.6\textwidth}
+
+            \begin{myinplacelisting}[minted language=cpp]
+auto i = 3.14; // C++11
+
+// C++14
+auto glambda = [] (auto a) {
+    return a;
+};
+
+// C++17
+void f([[maybe_unused]] int a);
+
+// C++20
+bool c = a <=> b;
+
+// C++23
+std::format("i={}\n", i);
+            \end{myinplacelisting}
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{Список полезных источников \\ и ресурсов}
+
+    \begin{enumerate}
+
+        \item \url{https://en.cppreference.com/w/}
+
+        \item \url{https://cplusplus.com/}
+
+        \item Bjarne Stroustrup: The C++ Programming Language
+
+        \item Scott Meyers: Effective Modern C++
+
+        \item \url{https://isocpp.org/}
+
+        \item \href{http://isocpp.github.io/CppCoreGuidelines/CppCoreGuidelines}{C++ Core Guidelines}
+
+        \item Working Draft, Standard for Programming Language C++
+
+        \item \href{https://www.youtube.com/@lectory\_fpmi}
+            {Лекции преподавателя ФПМИ Ильи Мещерина}
+
+    \end{enumerate}
+
+\end{frame}
+
+\end{document}
