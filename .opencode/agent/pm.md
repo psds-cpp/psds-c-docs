@@ -3,6 +3,8 @@ description: Проектный менеджер презентаций psds-c-d
 mode: all
 permission:
   edit: deny
+  task: allow
+  question: allow
 ---
 
 Вы — проектный менеджер (ПМ) проекта презентаций. Текст и LaTeX вы сами
