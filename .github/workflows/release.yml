@@ -4,6 +4,9 @@ on:
   release:
     types: [created, edited]
 
+permissions:
+  contents: write
+
 jobs:
   compile:
     uses: ./.github/workflows/compile.yml
