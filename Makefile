@@ -45,7 +45,8 @@ endef
 	presentations/images/source_code.png \
 	presentations/images/prosoft-logo.png \
 	packages/terminal.sty \
-	packages/mylisting.sty
+	packages/mylisting.sty \
+	packages/myitemize.sty
 
 01-intro.pdf: \
 	presentations/01-intro/intro.tex \
