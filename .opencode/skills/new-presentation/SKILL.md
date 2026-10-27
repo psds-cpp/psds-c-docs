@@ -36,6 +36,8 @@ description: Рецепт добавления новой презентации
 - `\usepackage[fontsize=\footnotesize, askip=3mm]{terminal}` и
   `\usepackage[fontsize=\footnotesize, linenosfontsize=\tiny, askip=3mm]{mylisting}`
   — только если в презентации есть примеры/терминал
+- `\usepackage{myitemize}` — окружение `myitemize` для буллетов
+  (использовать для маркированных списков)
 - `\subtitle{...}` — переопределяет подзаголовок по умолчанию из шаблона
 - Фреймы `\begin{frame}[...]{...}\frametitle{...}\end{frame}`;
   фреймы с кодом — обязательная опция `[fragile]`
@@ -43,9 +45,12 @@ description: Рецепт добавления новой презентации
 Примеры кода:
 
 - Файловый пример: файл `presentations/<NN-name>/<file>.c` (или `.h`) и
-  `\myinputlisting[minted language=c]{presentations/<NN-name>}/<file>.c`
-  — путь от корня проекта (первый аргумент — каталог, второй — имя файла).
-- Короткий фрагмент: `\myinplacelisting[minted language=c]{...код...}`
+  `\myinputlisting[minted language=c]{presentations/<NN-name>/}{<file>.c}`
+  — путь от корня проекта: первый аргумент — каталог (с завершающим
+  `/`), второй — имя файла.
+- Короткий фрагмент: окружение
+  `\begin{myinplacelisting}[minted language=c]` …код…
+  `\end{myinplacelisting}`
 - Запуск программы: окружение `terminalwindow`, команды
   `\shellcommand{gcc file.c}` и т.п. (escape-последовательность `||`).
 
@@ -78,6 +83,9 @@ C-код во всех примерах должен быть корректны
 4. Цель `install`: строка
    `cp "$(BUILD_DIR)/<NN-name>.pdf" "$(PREFIX)/presentations/<NN-name>.pdf"`.
 
+Если в презентации есть C++-примеры, в правило добавьте строку
+`$(wildcard presentations/<NN-name>/*.cpp)` (образец — `02-c-vs-cpp.pdf`).
+
 Общие зависимости (шаблоны, изображения) уже в правиле `*.pdf` — их
 дублировать не нужно.
 
@@ -90,12 +98,14 @@ C-код во всех примерах должен быть корректны
   `result/presentations/<NN-name>.pdf` существует и не пуст.
   Перед ней — `git add presentations/<NN-name>/`: flake копирует в
   песочницу только отслеживаемые git-файлы, untracked-файлы в `nix
-  build` невидимы (коммит при этом не нужен).
+  build` невидимы (коммит при этом не нужен). Стейджинг делает pm;
+  прочие git-команды субагенты не запускают — сессия на них зависает.
 
 ## 4. Частые ошибки
 
 - `Undefined control sequence` / `Environment terminalwindow undefined` —
   не подключён пакет `terminal`/`mylisting` в `.tex`.
+- `Environment myitemize undefined` — не подключён пакет `myitemize`.
 - `Package minted Error: ... file not found` — неверный путь в
   `\myinputlisting` (указывается от корня проекта, не от директории `.tex`).
 - Minted/verbatim-проблемы внутри фрейма — не стоит опция `[fragile]`.
