@@ -8,11 +8,29 @@
 \usepackage{myitemize}
 
 \title{Проектирование на C}
-\subtitle{Идиомы и приёмы проектирования проектов на C}
 
 \begin{document}
 
 \frame[plain]{\titlepage}
+
+\begin{frame}
+
+    \frametitle{Условия и принциы проектирования на C}
+
+    \begin{myitemize}
+
+        \item В C нет классов, наследования и исключений —
+            но код должен быть поддерживаемым и масштабируемым.
+
+        \item Проектирование на C собирают из простых механизмов:
+            \texttt{struct}, указатели, указатели на функции, \texttt{enum}.
+
+        \item Идиома — устойчивое сочетание этих механизмов,
+            которое повторяется из проекта в проект.
+
+    \end{myitemize}
+
+\end{frame}
 
 \begin{frame}
 
@@ -26,34 +44,11 @@
 
         \item init/deinit — жизненный цикл объекта;
 
-        \item options struct — конфигурация как данные;
-
-        \item возврат ошибок — коды и out-параметры;
+        \item возврат ошибок — коды и output-параметры;
 
         \item function table — поведение как данные;
 
-        \item tagged union — «вариант» на C.
-
-    \end{myitemize}
-
-\end{frame}
-
-\begin{frame}
-
-    \frametitle{Из чего складывается проектирование на C}
-
-    \begin{myitemize}
-
-        \item В C нет классов, наследования и исключений —
-            но крупные проекты на нём устроены «по-инженерному».
-
-        \item Проектирование на C собирают из простых механизмов:
-            \texttt{struct}, указатели, указатели на функции, \texttt{enum}.
-
-        \item Идиома — устойчивое сочетание этих механизмов,
-            которое повторяется из проекта в проект.
-
-        \item Программа лекции: семь идиом, в порядке от простых к сложным.
+        \item tagged union — \texttt{std::variant} на C.
 
     \end{myitemize}
 
@@ -61,7 +56,7 @@
 
 \begin{frame}[fragile]
 
-    \frametitle{Opaque pointer: сокрытие реализации}
+    \frametitle{Opaque pointer}
 
     \begin{columns}[T]
 
@@ -75,9 +70,6 @@
                 \item Определение \texttt{struct} — только в файле .c
                     (реализации).
 
-                \item Заголовок: перекрёстное объявление
-                    + объявления API.
-
                 \item Представление можно менять без пересборки клиентов.
 
             \end{myitemize}
@@ -86,10 +78,9 @@
 
         \begin{column}{0.4\textwidth}
 
-            \begin{myinplacelisting}[minted language=c]
-struct secret;
-typedef struct secret sec_t;
-            \end{myinplacelisting}
+            \myinputlisting[minted language=c]
+                {presentations/04-c-design/}
+                {opaque.h}
 
         \end{column}
 
@@ -99,15 +90,13 @@ typedef struct secret sec_t;
 
 \begin{frame}[fragile]
 
-    \frametitle{Opaque pointer: пример}
+    \frametitle{Opaque pointer}
 
     \begin{columns}[T]
 
         \begin{column}{0.48\textwidth}
 
-            \myinputlisting[minted language=c]
-                {presentations/04-c-design/}
-                {opaque.h}
+        Пример реализации библиотеки\footnotemark{}.
 
         \end{column}
 
@@ -124,55 +113,56 @@ typedef struct secret sec_t;
 
     \end{columns}
 
-    {\footnotesize
-    Объект хранится в \texttt{static}-переменной — упрощение;
-    уничтожение объекта — следующая тема (init/deinit).}
+    \footnotetext{%
+        Объект хранится в \texttt{static}-переменной.
+        Это намеренное упрощение.
+    }
 
 \end{frame}
 
 \begin{frame}[fragile]
 
-    \frametitle{Handle: число вместо указателя}
+    \frametitle{Handle (дескриптор)}
 
-    \begin{columns}[T]
+    \begin{myitemize}
 
-        \begin{column}{0.55\textwidth}
+        \item Handle — это индекс объекта в таблице реализации:
+            потребитель получает число, а не указатель.
 
-            \begin{myitemize}
-            \setlength{\itemsep}{0.25ex}
+        \item Развитие opaque pointer: представление по-прежнему
+            скрыто, но вместо указателя — обычное целое.
 
-                \item Handle — это индекс объекта в таблице реализации:
-                    потребитель получает число, а не указатель.
+        \item Плюсы: легко передавать, хранить и сравнивать;
+            «висящих» указателей на стороне клиента не бывает.
 
-                \item Развитие opaque pointer: представление по-прежнему
-                    скрыто, но вместо указателя — обычное целое.
+        \item Реализация: пул объектов + поиск свободного места
+            + невалидное значение.
 
-                \item Плюсы: легко передавать, хранить и сравнивать;
-                    «висящих» указателей на стороне клиента не бывает.
-
-                \item Реализация: пул объектов + поиск свободного места
-                    + невалидное значение.
-
-            \end{myitemize}
-
-        \end{column}
-
-        \begin{column}{0.4\textwidth}
-
-            \begin{myinplacelisting}[minted language=c]
-typedef uint32_t handle_t;
-#define BAD ((handle_t)-1)
-            \end{myinplacelisting}
-
-        \end{column}
-
-    \end{columns}
+    \end{myitemize}
 
 \end{frame}
 
 \begin{frame}[fragile]
 
-    \frametitle{Handle: пример}
+    \frametitle{Handle (дескриптор)}
+
+    Пример заголовочного файла библиотеки.
+
+    \bigbreak
+
+    \myinputlisting[minted language=c]
+        {presentations/04-c-design/}
+        {handle.h}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Handle (дескриптор)}
+
+    Пример реализации библиотеки.
+
+    \bigbreak
 
     \myinputlisting[minted language=c,
         minted options={fontsize=\scriptsize, breaklines,
@@ -180,58 +170,53 @@ typedef uint32_t handle_t;
         {presentations/04-c-design/}
         {handle.c}
 
-    {\footnotesize
-    Потребитель видит только handle (здесь — 0); что такое объект —
-    вопрос реализации. Невалидное значение \texttt{(handle\_t)-1}
-    в проекте лучше именованным макросом.}
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Init/deinit}
+
+    \begin{myitemize}
+
+        \item Пара функций: \texttt{init} создаёт и
+            инициализирует объект, \texttt{deinit} освобождает
+            ресурсы.
+
+        \item \texttt{init} может провалиться — вернёт
+            \texttt{NULL}; результат \texttt{init}
+            всегда проверяем.
+
+        \item \texttt{deinit} освобождает всё, что занял
+            \texttt{init}: память, файлы, соединения.
+
+        \item Аналог конструктора/деструктора в C: RAII нет,
+            поэтому требуется ручной контроль.
+
+    \end{myitemize}
 
 \end{frame}
 
 \begin{frame}[fragile]
 
-    \frametitle{Init/deinit: управление временем жизни}
+    \frametitle{Init/deinit}
 
-    \begin{columns}[T]
+    Пример заголовочного файла библиотеки.
 
-        \begin{column}{0.5\textwidth}
+    \bigbreak
 
-            \begin{myitemize}
-            \setlength{\itemsep}{1ex}
-
-                \item Пара функций: \texttt{init} создаёт и
-                    инициализирует объект, \texttt{deinit} освобождает
-                    ресурсы.
-
-                \item \texttt{init} может провалиться — вернёт
-                    \texttt{NULL}; результат \texttt{init}
-                    всегда проверяем.
-
-                \item \texttt{deinit} освобождает всё, что занял
-                    \texttt{init}: память, файлы, соединения.
-
-                \item Аналог конструктора/деструктора в C: RAII нет —
-                    дисциплина ручная.
-
-            \end{myitemize}
-
-        \end{column}
-
-        \begin{column}{0.46\textwidth}
-
-            \begin{myinplacelisting}[minted language=c]
-struct cfg *cfg_init(int cap);
-void cfg_deinit(struct cfg *c);
-            \end{myinplacelisting}
-
-        \end{column}
-
-    \end{columns}
+    \myinputlisting[minted language=c]
+        {presentations/04-c-design/}
+        {lifecycle.h}
 
 \end{frame}
 
 \begin{frame}[fragile]
 
-    \frametitle{Init/deinit: пример}
+    \frametitle{Init/deinit}
+
+    Пример реализации библиотеки.
+
+    \bigbreak
 
     \myinputlisting[minted language=c,
         minted options={fontsize=\scriptsize, breaklines,
@@ -239,96 +224,71 @@ void cfg_deinit(struct cfg *c);
         {presentations/04-c-design/}
         {lifecycle.c}
 
-    {\footnotesize
-    У объекта одно поле — упрощение; реальный объект держит память,
-    файлы, соединения — \texttt{deinit} освобождает их все.}
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Возврат ошибок}
+
+    \begin{myitemize}
+
+        \item Код возврата: 0 = OK, > 0 — код ошибки;
+            явно и самоочевидно.
+
+        \item errno-стиль: вернуть \texttt{-1}/\texttt{NULL},
+            код — в глобальной переменной \texttt{errno}
+            (POSIX); слабость: состояние общее для потока.
+
+    \end{myitemize}
 
 \end{frame}
 
 \begin{frame}[fragile]
 
-    \frametitle{Options struct: конфигурация как данные}
+    \frametitle{Возврат ошибок}
 
     \begin{columns}[T]
 
-        \begin{column}{0.55\textwidth}
+        \begin{column}{0.48\textwidth}
 
-            \begin{myitemize}
-            \setlength{\itemsep}{0.25ex}
-
-                \item Много параметров у функции (особенно опциональных)
-                    — выносим их в структуру конфигурации.
-
-                \item 0 / «ноль» — типичное значение по умолчанию:
-                    «не задано».
-
-                \item Расширение API — новое поле в структуре;
-                    старые вызовы не ломаются.
-
-                \item Конфигуцию удобно передавать «пакетом»,
-                    копировать, хранить.
-
-                \item Продолжение предыдущей темы:
-                    \texttt{log\_init(const log\_opts\_t *opts)}
-                    вместо \texttt{log\_init(int level, int timeout, …)}.
-
-            \end{myitemize}
-
-        \end{column}
-
-        \begin{column}{0.4\textwidth}
-
-            \begin{myinplacelisting}[minted language=c]
-typedef struct {
-    int level;
-    int timeout;
-} log_opts_t;
-            \end{myinplacelisting}
-
-        \end{column}
-
-    \end{columns}
-
-\end{frame}
-
-\begin{frame}[fragile]
-
-    \frametitle{Возврат ошибок: подходы}
-
-    \begin{columns}[T]
-
-        \begin{column}{0.55\textwidth}
-
-            \begin{myitemize}
-            \setlength{\itemsep}{0.25ex}
-
-                \item Исключений в C нет: ошибка возвращается явно.
-
-                \item Код возврата: 0 = OK, > 0 — код ошибки;
-                    явно и самоочевидно.
-
-                \item errno-стиль: вернуть \texttt{-1}/\texttt{NULL},
-                    код — в глобальной переменной \texttt{errno}
-                    (POSIX); слабость: состояние общее для потока.
-
-                \item Статус + out-параметр: результат — отдельный
-                    канал, а не «ошибка».
-
-                \item Выбор: собственный API — явные коды;
-                    POSIX-совместимость — \texttt{errno}.
-
-            \end{myitemize}
-
-        \end{column}
-
-        \begin{column}{0.4\textwidth}
-
-            \begin{myinplacelisting}[minted language=c]
+            \begin{mytitledinplacelisting}[minted language=c]{Пример с кодом возврата}
 typedef enum {
     ERR_OK = 0,
     ERR_EMPTY,
 } err_t;
-            \end{myinplacelisting}
+
+err_t parse(int* out, char* s);
+
+int main(int argc, char* argv[]) {
+    int i = 0;
+    if (parse(&i, argv[1]) {
+        // process error...
+    }
+}
+            \end{mytitledinplacelisting}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \begin{mytitledinplacelisting}[minted language=c]{Пример с errno}
+typedef enum {
+    ERR_OK = 0,
+    ERR_EMPTY,
+} err_t;
+
+extern err_t err;
+
+int parse(char* s);
+
+int main(int argc, char* argv[]) {
+    int i = parse(argv[1]);
+    if (err) {
+        // process error
+        // and discard i...
+    }
+}
+            \end{mytitledinplacelisting}
 
         \end{column}
 
@@ -338,120 +298,53 @@ typedef enum {
 
 \begin{frame}[fragile]
 
-    \frametitle{Возврат ошибок: пример}
+    \frametitle{Function table}
 
-    \myinputlisting[minted language=c,
-        minted options={fontsize=\scriptsize, breaklines,
-            breakanywhere, linenos, escapeinside=||, numbersep=2pt}]
-        {presentations/04-c-design/}
-        {errors.c}
+    \begin{myitemize}
 
-    {\footnotesize
-    Логика функции намеренно тривиальна — важно соглашение,
-    а не парсер. Вывод: \texttt{0: 7}.}
+        \item Структура из указателей на функции — таблица операций
+            («vtable» на C).
 
-\end{frame}
+        \item Объект = данные + указатель на свою
+            таблицу операций.
 
-\begin{frame}[fragile]
+        \item Разные «классы» — разные таблицы
+            с общими подписями.
 
-    \frametitle{Function table: поведение как данные}
-
-    \begin{columns}[T]
-
-        \begin{column}{0.52\textwidth}
-
-            \begin{myitemize}
-
-                \item Struct из указателей на функции — таблица операций
-                    («vtable» на C).
-
-                \item Объект = данные + указатель на свою
-                    таблицу операций.
-
-                \item Разные «классы» — разные таблицы
-                    с общими подписями.
-
-                \item Вызовы идут единообразно через таблицу:
-                    \texttt{d->ops->open(d)} — без if/switch по типу.
-
-            \end{myitemize}
-
-        \end{column}
-
-        \begin{column}{0.46\textwidth}
-
-            \begin{myinplacelisting}[minted language=c]
-struct dev;
-struct ops {
-    void (*open)(struct dev *d);
-};
-            \end{myinplacelisting}
-
-        \end{column}
-
-    \end{columns}
+    \end{myitemize}
 
 \end{frame}
 
 \begin{frame}[fragile]
 
-    \frametitle{Function table: пример}
+    \frametitle{Function table}
 
     \myinputlisting[minted language=c]
         {presentations/04-c-design/}
         {vtable.c}
 
-    {\footnotesize
-    «Второй тип устройства» — вторая таблица с теми же подписями,
-    но другими функциями; вызывающий код при этом не меняется.}
-
 \end{frame}
 
 \begin{frame}[fragile]
 
-    \frametitle{Tagged union: «вариант» на C}
+    \frametitle{Tagged union}
 
-    \begin{columns}[T]
+    \begin{myitemize}
 
-        \begin{column}{0.5\textwidth}
+        \item Tagged union позволяет создать product type
+            из теории типов\footnotemark{}.
 
-            \begin{myitemize}
-            \setlength{\itemsep}{1ex}
+        \item Тип кодируется при помощи константы-тега,
+            а само значение хранится в объединении
+            (\texttt{union}).
 
-                \item «Вариант» на C: \texttt{enum} (тег) + \texttt{union}
-                    (данные разных типов).
+        \item Инвариант: тег и значение выставляются вместе.
 
-                \item В любой момент действителен ровно один член
-                    union — тег показывает, какой.
+    \end{myitemize}
 
-                \item Инвариант: тег и поле выставляются вместе.
-
-                \item Геттер без проверки тега — undefined behavior;
-                    поэтому геттер возвращает ошибку.
-
-                \item Где применяется: значения настроек, узлы AST,
-                    результат нескольких типов.
-
-            \end{myitemize}
-
-        \end{column}
-
-        \begin{column}{0.44\textwidth}
-
-            \begin{myinplacelisting}[minted language=c,
-                minted options={fontsize=\scriptsize, breaklines,
-                    breakanywhere, linenos, escapeinside=||,
-                    numbersep=2pt}]
-enum kind { K_INT, K_STR };
-struct val {
-    enum kind k;
-    union { int i; const char *s; } u;
-};
-            \end{myinplacelisting}
-
-        \end{column}
-
-    \end{columns}
+    \footnotetext{В product type данные хранятся одновременно (И),
+        а в sum-type в конкретный момент времени хранится только один из
+        возможных вариантов (ИЛИ).}
 
 \end{frame}
 
@@ -463,10 +356,6 @@ struct val {
         {presentations/04-c-design/}
         {tagged.c}
 
-    {\footnotesize
-    Вывод \texttt{42 -1}: int-значение прочитано, string-значение
-    отклонено проверкой тега — инвариант работает.}
-
 \end{frame}
 
 \begin{frame}
@@ -477,14 +366,13 @@ struct val {
 
         \item Инкапсуляция: opaque pointer → handle.
 
-        \item Жизненный цикл: init/deinit; конфигурация:
-            options struct.
+        \item Жизненный цикл: init/deinit.
 
         \item Ошибки: коды возврата, out-параметры, errno.
 
         \item Поведение: function table («vtable» на C).
 
-        \item Данные: tagged union («вариант» на C).
+        \item Данные: tagged union (\texttt{std::variant} на C).
 
         \item Идиомы комбинируются: API библиотеки на C можно
             устроить «как класс».
