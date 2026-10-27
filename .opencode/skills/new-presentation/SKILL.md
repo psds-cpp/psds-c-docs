@@ -117,3 +117,7 @@ C-код во всех примерах должен быть корректны
 - `make: *** No rule to make target '<NN-name>.pdf'` — цель не добавлена
   в Makefile.
 - `nix build` не видит новый pdf — цель не добавлена в `install`.
+- `make: *** No rule to make target 'presentations/<NN-name>/<name>.tex'`
+  только в `nix build` (в `nix develop` всё собирается) — новые файлы
+  untracked: сделать `git add presentations/<NN-name>/` (стейджинг) и
+  повторить `nix build`.
