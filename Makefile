@@ -11,12 +11,14 @@ all: build
 
 build: \
 	01-intro.pdf \
-	02-c-vs-cpp.pdf
+	02-c-vs-cpp.pdf \
+	04-c-design.pdf
 
 install: build
 	mkdir -p "$(PREFIX)/presentations"
 	cp "$(BUILD_DIR)/01-intro.pdf" "$(PREFIX)/presentations/01-intro.pdf"
 	cp "$(BUILD_DIR)/02-c-vs-cpp.pdf" "$(PREFIX)/presentations/02-c-vs-cpp.pdf"
+	cp "$(BUILD_DIR)/04-c-design.pdf" "$(PREFIX)/presentations/04-c-design.pdf"
 
 clean:
 	rm -rf $(BUILD_DIR)
@@ -29,6 +31,7 @@ help:
 	@printf "install\tinstall all presentations and homeworks\n"
 	@printf "01-intro.pdf\tbuild presentation 01-intro.pdf\n"
 	@printf "02-c-vs-cpp.pdf\tbuild presentation 02-c-vs-cpp.pdf\n"
+	@printf "04-c-design.pdf\tbuild presentation 04-c-design.pdf\n"
 
 define generate_pdf
 	TEXINPUTS='$(shell pwd)//:' \
@@ -59,4 +62,10 @@ endef
 	$(wildcard presentations/02-c-vs-cpp/*.c) \
 	$(wildcard presentations/02-c-vs-cpp/*.cpp) \
 	$(wildcard presentations/02-c-vs-cpp/*.h)
+	$(call generate_pdf,$<,$@)
+
+04-c-design.pdf: \
+	presentations/04-c-design/04-c-design.tex \
+	$(wildcard presentations/04-c-design/*.c) \
+	$(wildcard presentations/04-c-design/*.h)
 	$(call generate_pdf,$<,$@)
