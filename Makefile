@@ -11,12 +11,14 @@ all: build
 
 build: \
 	01-intro.pdf \
-	02-c-vs-cpp.pdf
+	02-c-vs-cpp.pdf \
+	03-storage-duration.pdf
 
 install: build
 	mkdir -p "$(PREFIX)/presentations"
 	cp "$(BUILD_DIR)/01-intro.pdf" "$(PREFIX)/presentations/01-intro.pdf"
 	cp "$(BUILD_DIR)/02-c-vs-cpp.pdf" "$(PREFIX)/presentations/02-c-vs-cpp.pdf"
+	cp "$(BUILD_DIR)/03-storage-duration.pdf" "$(PREFIX)/presentations/03-storage-duration.pdf"
 
 clean:
 	rm -rf $(BUILD_DIR)
@@ -29,6 +31,7 @@ help:
 	@printf "install\tinstall all presentations and homeworks\n"
 	@printf "01-intro.pdf\tbuild presentation 01-intro.pdf\n"
 	@printf "02-c-vs-cpp.pdf\tbuild presentation 02-c-vs-cpp.pdf\n"
+	@printf "03-storage-duration.pdf\tbuild presentation 03-storage-duration.pdf\n"
 
 define generate_pdf
 	TEXINPUTS='$(shell pwd)//:' \
@@ -58,4 +61,12 @@ endef
 	$(wildcard presentations/02-c-vs-cpp/*.c) \
 	$(wildcard presentations/02-c-vs-cpp/*.cpp) \
 	$(wildcard presentations/02-c-vs-cpp/*.h)
+	$(call generate_pdf,$<,$@)
+
+03-storage-duration.pdf: \
+	presentations/03-storage-duration/storage-duration.tex \
+	$(wildcard presentations/03-storage-duration/*.c) \
+	$(wildcard presentations/03-storage-duration/*.h) \
+	$(wildcard presentations/03-storage-duration/extern/*.c) \
+	$(wildcard presentations/03-storage-duration/extern/*.h)
 	$(call generate_pdf,$<,$@)

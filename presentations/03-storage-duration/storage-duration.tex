@@ -1,0 +1,494 @@
+% !TeX TS-program = xelatex
+
+\documentclass[compress,aspectratio=169]{beamer}
+
+\usepackage{presentationtemplate}
+\usepackage[fontsize=\footnotesize, askip=3mm]{terminal}
+\usepackage[fontsize=\footnotesize, linenosfontsize=\tiny, askip=3mm]{mylisting}
+\usepackage{myitemize}
+
+\title{Время хранения и время жизни объектов}
+\subtitle{Storage duration, время жизни и связывание в C}
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+
+\begin{frame}
+
+    \frametitle{Два независимых вопроса о переменной}
+
+    У объявления переменной две характеристики,
+    которые часто путают, — и они не определяют
+    друг друга.
+
+    \begin{myitemize}
+
+        \item scope (область видимости) — где в тексте
+            программы имя ссылается на именно этот
+            объект; свойство времени компиляции.
+
+        \item storage duration (время хранения) — как
+            долго объект занимает память; определяет
+            lifetime (время жизни) во время выполнения.
+
+        \item Пример разрыва: \texttt{static}-переменная
+            внутри функции — имя видно только в функции
+            (scope), а объект живёт всю программу
+            (duration).
+
+    \end{myitemize}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{Lifetime и storage duration}
+
+    \begin{myitemize}
+
+        \item lifetime (время жизни) — часть времени
+            выполнения, в течение которой объект занимает
+            память: от создания до уничтожения.
+
+        \item storage duration — свойство времени
+            компиляции, которое задаёт минимальное время
+            жизни объекта.
+
+        \item Виды в C: \texttt{automatic}, \texttt{static},
+            \texttt{dynamic}, \texttt{thread}.
+
+        \item Thread storage duration (C11,
+            \texttt{\_Thread\_local}) — упоминаем одним
+            словом; отдельно не рассматриваем.
+
+    \end{myitemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Automatic: время жизни объекта}
+
+    \begin{myitemize}
+
+        \item Automatic-объект создаётся при входе в блок
+            и уничтожается при выходе из него.
+
+        \item При повторном входе в блок создаётся новый
+            объект — предыдущий уже не существует.
+
+    \end{myitemize}
+
+    \begin{myinplacelisting}[minted language=c]
+int main(void)
+{
+    char c0 = 0; /* c0: begins */
+    (void)c0;
+    {
+        char c1 = 0; /* c1: begins */
+        (void)c1;
+    } /* c1: ends */
+    return 0;
+} /* c0: ends */
+    \end{myinplacelisting}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{Automatic: LIFO-стек}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.54\textwidth}
+
+            \begin{myitemize}
+
+                \item На практике automatic storage duration
+                    реализуется LIFO-стекком (stack-based
+                    memory allocation).
+
+                \item Вызов функции кладёт на стек кадр
+                    (stack frame) со своими
+                    automatic-объектами; возвращение из
+                    функции снимает кадр.
+
+                \item Отсюда ограничение: глубина рекурсии
+                    ограничена объёмом стека
+                    (stack overflow).
+
+            \end{myitemize}
+
+        \end{column}
+
+        \begin{column}{0.44\textwidth}
+
+            \begin{center}
+
+                \begin{tikzpicture}[
+                    bytenode/.style={
+                        rectangle,
+                        thick,
+                        minimum width=9mm,
+                        minimum height=6mm,
+                    },
+                ]
+                    \node[bytenode, fill=green!10,
+                        label={[label distance=1.5mm]left:{\footnotesize\texttt{0x7ffccbf93240}}},
+                        label={[label distance=1.5mm]right:\footnotesize\textit{свободна}}]
+                        (b0) at (0, 0) {};
+                    \node[bytenode, fill=yellow!10, above=0 of b0,
+                        label={[label distance=1.5mm]left:{\footnotesize\texttt{0x7ffccbf9323f}}}]
+                        (b1) {\texttt{c0}};
+                    \node[bytenode, fill=red!10, above=0 of b1,
+                        label={[label distance=1.5mm]left:{\footnotesize\texttt{0x7ffccbf9323e}}}]
+                        (b2) {\texttt{c1}};
+                \end{tikzpicture}
+
+                \small
+                \texttt{c1} создан над \texttt{c0} (по меньшему
+                адресу): LIFO — при выходе из вложенного блока
+                \texttt{c1} уничтожается раньше.
+
+            \end{center}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Automatic в C: неинициализированная переменная}
+
+    \begin{myitemize}
+
+        \item Indeterminate value — это не ноль: в памяти
+            может быть что угодно.
+
+        \item Инициализируйте automatic-переменные
+            при объявлении.
+
+    \end{myitemize}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.44\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/03-storage-duration/}
+                {uninit.c}
+
+        \end{column}
+
+        \begin{column}{0.54\textwidth}
+
+            \begin{terminalwindow}[minted options={fontsize=\scriptsize, breaklines, breakanywhere, escapeinside=!!, breaksymbolleft=}]
+!!\shellcommand{gcc -Wall uninit.c}!!
+uninit.c: In function ‘main’:
+uninit.c:6:5: warning: ‘i’ is used uninitialized [-Wuninitialized]
+    6 |     printf("%d\n", i);
+      |     ^~~~~~~~~~~~~~~~~
+uninit.c:5:9: note: ‘i’ was declared here
+    5 |     int i;
+      |         ^
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Dynamic: malloc и free}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.44\textwidth}
+
+            \begin{myitemize}
+                \footnotesize
+
+                \item Куча (heap) — регион памяти,
+                    отдельный от стека, без
+                    LIFO-порядка стека.
+
+                \item Время жизни объекта: от успешного
+                    \texttt{malloc} до \texttt{free}
+                    (или до завершения программы).
+
+                \item В C — только \texttt{malloc}/
+                    \texttt{free} (нет \texttt{new}/
+                    \texttt{delete}); \texttt{free(p)} —
+                    конец времени жизни объекта,
+                    указатель \texttt{p} не уничтожается.
+
+            \end{myitemize}
+
+        \end{column}
+
+        \begin{column}{0.54\textwidth}
+
+            \myinputlisting[minted language=c, minted options={fontsize=\tiny, breaklines, breakanywhere, linenos, escapeinside=||, numbersep=2pt}]
+                {presentations/03-storage-duration/}
+                {malloc-heap.c}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{Dynamic: правила работы с кучей}
+
+    \begin{myitemize}
+
+        \item \texttt{malloc} возвращает \texttt{void*} —
+            в C \texttt{void*} неявно приводится к любому
+            указателю на объект, каст не нужен.
+
+        \item При нехватке памяти \texttt{malloc}
+            возвращает \texttt{NULL} — результат
+            обязательно проверяйте до использования.
+
+        \item Каждому \texttt{malloc} — ровно один
+            \texttt{free}; использование памяти после
+            \texttt{free} и повторный \texttt{free} —
+            неопределённое поведение.
+
+        \item Размер выделяется в байтах:
+            \texttt{n * sizeof *p}.
+
+    \end{myitemize}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Static: время хранения и нулевая инициализация}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.44\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/03-storage-duration/}
+                {static-objects.c}
+
+        \end{column}
+
+        \begin{column}{0.54\textwidth}
+
+            \begin{myitemize}
+                \footnotesize
+
+                \item \texttt{int g;} (global): живёт всю
+                    программу и инициализируется нулём
+                    автоматически: скаляры — 0, указатели
+                    — \texttt{NULL}.
+
+                \item \texttt{static int h;} (file scope):
+                    то же время хранения и нулевая
+                    инициализация; плюс внутреннее
+                    связывание (слайд 11).
+
+                \item \texttt{static int c;} в функции: имя
+                    видно только в этой функции, объект
+                    живёт всю программу и начинается с 0.
+
+                \item Для сравнения: automatic-переменная
+                    без инициализатора — неопределённое
+                    значение (слайд 6).
+
+            \end{myitemize}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Static: счётчик между вызовами}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.6\textwidth}
+
+            \myinputlisting[minted language=c, minted options={fontsize=\scriptsize, breaklines, breakanywhere, linenos, escapeinside=||, numbersep=2pt}]
+                {presentations/03-storage-duration/}
+                {static-counter.c}
+
+        \end{column}
+
+        \begin{column}{0.38\textwidth}
+
+            \begin{terminalwindow}
+!!\shellcommand{gcc static-counter.c}!!
+!!\shellcommand{./a.out}!!
+1
+2
+3
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Linkage: internal и external}
+
+    Связывание (linkage) определяет, можно ли обращаться
+    к имени объекта (или функции) из другой единицы
+    трансляции.
+
+    \begin{myitemize}
+        \footnotesize
+
+        \item Единица трансляции — один .c-файл
+            после препроцессирования.
+
+        \item External linkage — по умолчанию у
+            глобальных объектов и функций: имя доступно
+            из других файлов (через \texttt{extern}).
+
+        \item Internal linkage — глобальный объект
+            с \texttt{static} в начале файла: имя
+            существует только в этом файле (защита от
+            конфликтов имён).
+
+        \item В C нет namespaces: конфликты имён
+            между файлами решаются префиксами-конвенциями
+            (см. 02-c-vs-cpp).
+
+    \end{myitemize}
+
+    \begin{myinplacelisting}[minted language=c]
+int x;         /* external linkage */
+static int y;  /* internal linkage */
+    \end{myinplacelisting}
+
+\end{frame}
+
+\begin{frame}[fragile]
+
+    \frametitle{Extern: одна переменная в нескольких файлах}
+
+    \small
+    Объект определяется один раз (\texttt{foo.c});
+    \texttt{extern} в заголовке — объявление без
+    выделения памяти, поэтому все файлы видят один
+    и тот же объект.
+
+    \normalsize
+
+    \begin{columns}[T]
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/03-storage-duration/extern/}
+                {foo.h}
+
+            \myinputlisting[minted language=c]
+                {presentations/03-storage-duration/extern/}
+                {foo.c}
+
+        \end{column}
+
+        \begin{column}{0.48\textwidth}
+
+            \myinputlisting[minted language=c, minted options={fontsize=\scriptsize, breaklines, breakanywhere, linenos, escapeinside=||, numbersep=2pt}, after skip=0mm]
+                {presentations/03-storage-duration/extern/}
+                {main.c}
+
+            \begin{terminalwindow}[minted options={fontsize=\scriptsize, breaklines, breakanywhere, escapeinside=!!, breaksymbolleft=}]
+!!\shellcommand{gcc main.c foo.c}!!
+!!\shellcommand{./a.out}!!
+1
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{Итоговая таблица}
+
+    \begin{center}
+
+        \scriptsize
+        \setlength{\tabcolsep}{4pt}
+        \begin{tabular}{lll}
+            \hline
+            \textbf{storage duration} & \textbf{пример} & \textbf{время жизни} \\
+            \hline
+            automatic & \texttt{int x;} в функции &
+                вход в блок $\rightarrow$ выход из блока \\
+            static & \texttt{int g;}, \texttt{static int c;} &
+                запуск $\rightarrow$ завершение программы \\
+            dynamic & \texttt{p = malloc(n)} &
+                \texttt{malloc} $\rightarrow$ \texttt{free} \\
+            thread & \texttt{\_Thread\_local int x;} (C11) &
+                старт $\rightarrow$ конец потока \\
+            \hline
+        \end{tabular}
+
+    \end{center}
+
+    \vspace{1em}
+
+    \begin{myitemize}
+
+        \item Нулевая инициализация по умолчанию: static
+            (глобальные и \texttt{static}) — да; automatic
+            и dynamic — нет (неопределённое значение).
+
+    \end{myitemize}
+
+\end{frame}
+
+\begin{frame}
+
+    \frametitle{Выводы}
+
+    \begin{myitemize}
+
+        \item Scope и storage duration — независимые
+            свойства: где видно имя — не значит, сколько
+            живёт объект.
+
+        \item Automatic без инициализатора в C —
+            indeterminate value: чтение до записи — UB
+            (предупреждение \texttt{-Wuninitialized}).
+
+        \item Dynamic: \texttt{malloc}/\texttt{free},
+            проверка \texttt{NULL}, один \texttt{malloc}
+            — один \texttt{free}.
+
+        \item Static: живёт всю программу, инициализируется
+            нулём; \texttt{static} в file scope — internal
+            linkage.
+
+        \item Глобальные объекты с external linkage
+            разделяются между файлами через
+            \texttt{extern}.
+
+    \end{myitemize}
+
+\end{frame}
+
+\end{document}

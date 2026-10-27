@@ -88,6 +88,9 @@ C-код во всех примерах должен быть корректны
 - Лог сборки: `build/<NN-name>.log` (out_dir задан в `.latexmkrc`)
 - Финальная проверка: `nix build` → убедиться, что
   `result/presentations/<NN-name>.pdf` существует и не пуст.
+  Перед ней — `git add presentations/<NN-name>/`: flake копирует в
+  песочницу только отслеживаемые git-файлы, untracked-файлы в `nix
+  build` невидимы (коммит при этом не нужен).
 
 ## 4. Частые ошибки
 
@@ -99,3 +102,7 @@ C-код во всех примерах должен быть корректны
 - `make: *** No rule to make target '<NN-name>.pdf'` — цель не добавлена
   в Makefile.
 - `nix build` не видит новый pdf — цель не добавлена в `install`.
+- `make: *** No rule to make target 'presentations/<NN-name>/<name>.tex'`
+  только в `nix build` (в `nix develop` всё собирается) — новые файлы
+  untracked: сделать `git add presentations/<NN-name>/` (стейджинг) и
+  повторить `nix build`.

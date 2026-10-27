@@ -9,6 +9,12 @@
   pdf-файлы оказываются в `result/presentations/`. Презентация считается
   готовой, только когда `nix build` проходит успешно и её pdf есть
   в `result/presentations/`.
+- **`nix build` видит только отслеживаемые git-файлы.** `src = ./.` во
+  flake — git-репозиторий, поэтому новые (untracked) файлы презентации
+  в песочницу сборки не попадают: перед `nix build` их нужно
+  `git add` (простой стейджинг, без коммита — коммитит пользователь).
+  Симптом: `make: *** No rule to make target
+  'presentations/<NN-name>/<name>.tex'` именно в `nix build`.
 - **Отладка — `nix develop`.** Внутри devshell доступны `make`, `latexmk`
   и остальные утилиты TeX:
   - `make` — собрать все;
