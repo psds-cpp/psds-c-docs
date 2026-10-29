@@ -7,6 +7,8 @@
 \usepackage[fontsize=\footnotesize, linenosfontsize=\tiny, askip=3mm]{mylisting}
 \usepackage{myitemize}
 
+\usetikzlibrary{matrix, positioning}
+
 \title{Время хранения и время жизни объектов}
 
 \begin{document}
@@ -65,7 +67,7 @@ int main(void) {
 
 \end{frame}
 
-\begin{frame}
+\begin{frame}[fragile]
 
     \frametitle{Automatic: LIFO-стек}
 
@@ -94,24 +96,34 @@ int main(void) {
 
             \begin{center}
 
-                \begin{tikzpicture}[
-                    bytenode/.style={
-                        rectangle,
-                        thick,
-                        minimum width=9mm,
-                        minimum height=6mm,
-                    },
-                ]
-                    \node[bytenode, fill=green!10,
-                        label={[label distance=1.5mm]left:{\footnotesize\texttt{0x7ffccbf93240}}},
-                        label={[label distance=1.5mm]right:{\footnotesize\textit{свободно}}}]
-                        (b0) at (0, 0) {};
-                    \node[bytenode, fill=yellow!10, above=0 of b0,
-                        label={[label distance=1.5mm]left:{\footnotesize\texttt{0x7ffccbf9323f}}}]
-                        (b1) {\texttt{c0}};
-                    \node[bytenode, fill=red!10, above=0 of b1,
-                        label={[label distance=1.5mm]left:{\footnotesize\texttt{0x7ffccbf9323e}}}]
-                        (b2) {\texttt{c1}};
+                \begin{tikzpicture}
+                    \matrix [
+                        matrix of nodes,
+                        nodes={
+                            rectangle,
+                            draw=black,
+                            minimum width=9mm,
+                            minimum height=6mm,
+                            anchor=center,
+                            inner sep=0pt
+                        },
+                        row 1/.style={nodes={fill=red!10}},
+                        row 2/.style={nodes={fill=yellow!10}},
+                        row 3/.style={nodes={fill=green!10}},
+                        row sep=-\pgflinewidth,
+                        column sep=-\pgflinewidth
+                    ] (stack) {
+                        \texttt{c1} \\
+                        \texttt{c0} \\
+                        {}          \\ % Пустая ячейка для b0
+                    };
+
+                    % Метки слева (адреса памяти)
+                    \node[left=1.5mm of stack-1-1.west, font=\footnotesize\ttfamily] {0x7ffccbf9323e};
+                    \node[left=1.5mm of stack-2-1.west, font=\footnotesize\ttfamily] {0x7ffccbf9323f};
+                    \node[left=1.5mm of stack-3-1.west, font=\footnotesize\ttfamily] {0x7ffccbf93240};
+
+                    \node[right=1.5mm of stack-3-1.east, font=\footnotesize\itshape] {свободно};
                 \end{tikzpicture}
 
             \end{center}
@@ -190,7 +202,7 @@ uninit.c:5:9: note: ‘i’ was declared here
 
         \begin{column}{0.54\textwidth}
 
-            \myinputlisting[minted language=c, minted options={fontsize=\tiny, breaklines, breakanywhere, linenos, escapeinside=||, numbersep=2pt}]
+            \myinputlisting[minted language=c, minted options={fontsize=\small, breaklines, breakanywhere, linenos, escapeinside=||, numbersep=2pt}]
                 {presentations/03-storage-duration/}
                 {malloc-heap.c}
 
