@@ -183,10 +183,14 @@ void swap(int &a, int &b);
 
     \begin{myitemize}
 
-        \item В C константы перечислений живут в области, где объявленo
-        перечисление. Конфликт имен приведет к ошибке компиляции.
+        \item В C и C++ константы обычного перечисления
+        попадают в область, где оно
+        объявлено: конфликт имён приведёт к ошибке
+        компиляции.
 
-        \item В C++ область видимости констант ограничена перечислением.
+        \item В C++ есть \texttt{enum class}: константы
+        видны только по квалифицированному имени,
+        конфликта нет.
 
     \end{myitemize}
 
@@ -194,10 +198,10 @@ void swap(int &a, int &b);
 
         \begin{column}{0.48\textwidth}
 
-            \begin{mytitledinplacelisting}[minted language=c++]{C}
+            \begin{mytitledinplacelisting}[minted language=c]{C}
 enum Color { RED, GREEN };
 
-// error: ‘RED’ redeclared
+// error: 'RED' redeclared
 // as different kind of symbol
 int RED = 5;
             \end{mytitledinplacelisting}
@@ -207,13 +211,13 @@ int RED = 5;
         \begin{column}{0.48\textwidth}
 
             \begin{mytitledinplacelisting}[minted language=c++]{C++}
+// unscoped: ошибка, как в C
 enum Color { RED, GREEN };
-
-// нет ошибки
 int RED = 5;
 
+// enum class: без конфликта
 enum class Color2 { RED };
-int a = Color2::RED;
+Color2 c = Color2::RED;
             \end{mytitledinplacelisting}
 
         \end{column}
@@ -228,7 +232,7 @@ int a = Color2::RED;
 
     \begin{myitemize}
 
-        \item В C типа \texttt{bool} нет в языке: только
+        \item В языке C типа \texttt{bool} нет: только
         \texttt{\_Bool} + заголовок \texttt{<stdbool.h>} (C99),
         который вводит макросы \texttt{bool}, \texttt{true},
         \texttt{false}.
@@ -331,7 +335,7 @@ typedef unsigned int uint1;
 
         \begin{column}{0.48\textwidth}
 
-            \begin{mytitledinplacelisting}[minted language=c]{C++}
+            \begin{mytitledinplacelisting}[minted language=c]{C}
 int *a = malloc(10 * sizeof *a);
 if (!a) { /* обработка ошибки */ }
             \end{mytitledinplacelisting}
@@ -340,7 +344,7 @@ if (!a) { /* обработка ошибки */ }
 
         \begin{column}{0.48\textwidth}
 
-            \begin{mytitledinplacelisting}[minted language=c++]{C}
+            \begin{mytitledinplacelisting}[minted language=c++]{C++}
 // может бросить исключение
 // std::bad_alloc
 int *a = new int[10];
@@ -386,7 +390,7 @@ void foo();
 
         \begin{column}{0.48\textwidth}
 
-            \begin{mytitledinplacelisting}[minted language=c]{C++}
+            \begin{mytitledinplacelisting}[minted language=c]{C}
 int mylib_push(List *l, int v);
 void mylib_free(List *l);
             \end{mytitledinplacelisting}
@@ -395,7 +399,7 @@ void mylib_free(List *l);
 
         \begin{column}{0.48\textwidth}
 
-            \begin{mytitledinplacelisting}[minted language=c++]{C}
+            \begin{mytitledinplacelisting}[minted language=c++]{C++}
 namespace mylib {
 bool push(List &l, int v);
 void free(List &l);
@@ -410,12 +414,12 @@ void free(List &l);
 
 \begin{frame}[fragile]
 
-    \frametitle{Макросы для кодогонерации}
+    \frametitle{Макросы для кодогенерации}
 
     \begin{myitemize}
 
         \item В C нет шаблонов. Кодогенерация возможна
-            только засчет препроцессора.
+            только за счёт препроцессора.
             Макрос подставляет аргументы текстом.
 
         \item Шаблонная функция в C++ — обычный вызов: аргументы
@@ -450,8 +454,8 @@ void free(List &l);
     \frametitle{Ошибки: коды возврата и исключения}
 
     В C нет исключений. Функции могут сообщать об
-    ошибке только через вовзрат значений или запись
-    в определенный участок памяти.
+    ошибке только через возврат значений или запись
+    в определённый участок памяти.
 
     \begin{columns}[T]
 

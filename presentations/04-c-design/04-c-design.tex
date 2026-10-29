@@ -15,14 +15,14 @@
 
 \begin{frame}
 
-    \frametitle{Условия и принциы проектирования на C}
+    \frametitle{Условия и принципы проектирования на C}
 
     \begin{myitemize}
 
         \item В C нет классов, наследования и исключений —
             но код должен быть поддерживаемым и масштабируемым.
 
-        \item Проектирование на C собирают из простых механизмов:
+        \item Проектирование на C собирается из простых механизмов:
             \texttt{struct}, указатели, указатели на функции, \texttt{enum}.
 
         \item Идиома — устойчивое сочетание этих механизмов,
@@ -44,11 +44,11 @@
 
         \item init/deinit — жизненный цикл объекта;
 
-        \item возврат ошибок — коды и output-параметры;
+        \item возврат ошибок — коды и out-параметры;
 
         \item function table — поведение как данные;
 
-        \item tagged union — \texttt{std::variant} на C.
+        \item tagged union — аналог \texttt{std::variant} на C.
 
     \end{myitemize}
 
@@ -236,8 +236,9 @@
             явно и самоочевидно.
 
         \item errno-стиль: вернуть \texttt{-1}/\texttt{NULL},
-            код — в глобальной переменной \texttt{errno}
-            (POSIX); слабость: состояние общее для потока.
+            код — в переменной \texttt{errno} (POSIX);
+            слабость: переменная общая внутри потока —
+            любой вызов библиотеки может её перезаписать.
 
     \end{myitemize}
 
@@ -257,13 +258,15 @@ typedef enum {
     ERR_EMPTY,
 } err_t;
 
-err_t parse(int* out, char* s);
+err_t parse(int *out,
+            char *s);
 
-int main(int argc, char* argv[]) {
+int main(int argc, char **v) {
     int i = 0;
-    if (parse(&i, argv[1]) {
+    if (parse(&i, v[1]) != 0) {
         // process error...
     }
+    return 0;
 }
             \end{mytitledinplacelisting}
 
@@ -279,10 +282,10 @@ typedef enum {
 
 extern err_t err;
 
-int parse(char* s);
+int parse(char *s);
 
-int main(int argc, char* argv[]) {
-    int i = parse(argv[1]);
+int main(int argc, char **v) {
+    int i = parse(v[1]);
     if (err) {
         // process error
         // and discard i...
@@ -331,14 +334,14 @@ int main(int argc, char* argv[]) {
 
     \begin{myitemize}
 
-        \item Tagged union позволяет создать product type
+        \item Tagged union позволяет создать sum type
             из теории типов\footnotemark{}.
 
         \item Тип кодируется при помощи константы-тега,
             а само значение хранится в объединении
             (\texttt{union}).
 
-        \item Инвариант: тег и значение выставляются вместе.
+        \item Инвариант: тег и значение записываются вместе.
 
     \end{myitemize}
 
@@ -372,7 +375,7 @@ int main(int argc, char* argv[]) {
 
         \item Поведение: function table («vtable» на C).
 
-        \item Данные: tagged union (\texttt{std::variant} на C).
+        \item Данные: tagged union (аналог \texttt{std::variant} на C).
 
         \item Идиомы комбинируются: API библиотеки на C можно
             устроить «как класс».
