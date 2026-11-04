@@ -1,131 +1,79 @@
-# AGENTS.md
+# AI Agents Architecture
 
-Презентации курса «Язык C» Школы Разработчиков ООО «Прософт-Системы»:
-исходники — LaTeX/beamer (LuaTeX), все зависимости предоставляет Nix Flakes.
+This document describes the multi-agent orchestration setup for generating LuaTeX programming presentations.
 
-## Сборка и проверка
-
-- **Финальная проверка — `nix build`.** Собирает все презентации;
-  pdf-файлы оказываются в `result/presentations/`. Презентация считается
-  готовой, только когда `nix build` проходит успешно и её pdf есть
-  в `result/presentations/`.
-- **`nix build` видит только отслеживаемые git-файлы.** `src = ./.` во
-  flake — git-репозиторий, поэтому новые (untracked) файлы презентации
-  в песочницу сборки не попадают: перед `nix build` их нужно
-  `git add` (простой стейджинг, без коммита — коммитит пользователь).
-  Симптом: `make: *** No rule to make target
-  'presentations/<NN-name>/<name>.tex'` именно в `nix build`.
-- **Отладка — `nix develop`.** Внутри devshell доступны `make`, `latexmk`
-  и остальные утилиты TeX:
-  - `make` — собрать все;
-  - `make <NN-name>.pdf` — собрать одну (список целей: `make help`);
-  - `make clean` — удалить артефакты из `build/`.
-  - Неинтерактивно: `nix develop --command make <NN-name>.pdf`.
-- Итеративная работа (правка LaTeX, сборка одной цели, чтение логов) —
-  в `nix develop`. Финальный прогон перед отчётом о завершении — всегда
-  `nix build`.
-
-## Правила
-
-- **Не коммитить.** Никогда не выполнять `git commit`, `git push`,
-  `git commit --amend`. Пользователь коммитит сам. Это обеспечено и на
-  уровне харнеса: `opencode.json` (V2 `permissions`) запрещает для всех
-  агентов `git commit*`, `git push*`, `git reset*`.
-- Не удалять и не переименовывать существующие презентации без явной
-  просьбы.
-- Не менять общие ресурсы (`presentations/presentationtemplate.sty`,
-  `packages/*.sty`, `fonts/`, `Makefile` в целом) без необходимости;
-  при добавлении презентации в Makefile правятся только её цели.
-- **Фиксировать конвенции.** Любая новая проектная договорённость
-  (структура, стиль, параметры сборки) сразу записывается в этот файл, а
-  при касательстве к созданию/сборке презентаций — также в соответствующий
-  скилл `.opencode/skills/`. Не ждать отдельной просьбы.
-
-## Роли и конвейер (субагенты)
-
-Работа над презентациями распределена между тремя субагентами:
-
-| Агент        | Роль                                                                  | Ограничения                                   |
-| ------------ | --------------------------------------------------------------------- | --------------------------------------------- |
-| `c-expert`   | Эксперт по языку C: готовит план презентации (для согласования), а после согласования — её текст; на этапе 2 сам компилирует листинги (gcc); на этапе верстки (этап 3) решает, допустимы ли предложенные правки листингов/текста | пишет только черновики в `build/drafts/`; shell ограничен `gcc`/`cc`/`g++` и запуском `.out` из `build/drafts/` |
-| `latex-dev`  | Разработчик документов: переводит текст в LaTeX, подключает к Makefile, собирает и устраняет ошибки; при проблемах верстки предлагает pm правки листингов/текста | редактирует файлы, запускает `make`/`nix develop` |
-| `pm`         | Проектный менеджер: управляет конвейером, согласовывает план с пользователем, координирует правки между latex-dev и c-expert на этапе верстки, проверяет результат | не редактирует файлы; проверяет `nix build` и `result/` |
-
-Конвейер:
-
+## Pipeline Overview
+```mermaid
+graph TD
+    User([User]) --> PM[product-manager]
+    PM --> TW[tech-writer]
+    PM --> LD[latex-designer]
+    LD --> Build[build skill]
+    PM --> Install[install skill]
 ```
-требование пользователя
-  → pm
-  → c-expert      (план → build/drafts/<NN-name>.plan.md)
-  → пользователь  (согласование плана; замечания → c-expert дорабатывает план)
-  → c-expert      (текст → build/drafts/<NN-name>.md)
-  → latex-dev     (.tex + Makefile, make до успеха)
-  ↺ проблемы верстки: latex-dev → pm → c-expert
-    (c-expert решает: принять правку листинга/текста или предложить
-     альтернативу; цикл повторяется до решения)
-  → pm            (проверка: nix build, содержимое result/presentations/)
-  → отчёт пользователю
-```
+`latex-designer` iterates with the `build` skill; `product-manager`
+performs the final production validation with the `install` skill.
 
-План презентации всегда согласуется с пользователем до написания текста.
-При задаче создать или существенно обновить презентацию делегируйте её
-субагенту `pm` (инструмент task), а не выполняйте сами.
+---
 
-Проверка листингов — на **c-expert**: на этапе 2 он сам компилирует
-все полные C-примеры (`gcc -Wall -Wextra`; shell-allowlist задан в
-`permissions` агента) и сверяет вывод программ с текстом слайдов.
-Ошибки компиляции не должны доходить до **latex-dev**.
+## Team Roster
 
-Этап 3 c-expert (исправления) начинается после верстки презентации
-latex-dev: pm передаёт ему проблемы верстки, c-expert решает, допустимы
-ли предложенные изменения листингов/текста, или предлагает альтернативу.
-Структурные изменения в листингах (кроме пробельных символов и переносов
-строк) всегда проходят это согласование.
+The authoritative source of access rights is `opencode.json`
+(agent permission lists; agent rules are appended after the global
+rules and the last matching rule wins).
+Note: the `skills:` field in agent frontmatter is decorative in
+OpenCode V2 — it does not grant or restrict anything; skill loading
+is controlled by the `skill` permission action in `opencode.json` only.
 
-Блокирующие вопросы субагентов pm сначала пытается сам ответить из
-требования, а если не может — перенаправляет пользователю. Все команды
-субагентов запускаются с таймаутом, на случай, если команда зависнет.
+### 1. product-manager (`mode: primary`)
+* **Role:** Team orchestrator, supervisor, and user-facing interface.
+* **Responsibilities:**
+  * Gathers requirements from the user in Russian.
+  * Writes prompts and manages task IDs for subagents.
+  * Validates the final build via `install` skill.
+* **Context Access:** full shell except `git push` / `git reset`
+  (`git commit` is allowed, the `install` flow relies on
+  `git add` / production build); edits restricted to harness files
+  (`.opencode/**`, `opencode.json`, `AGENTS.md`); access to all
+  skills (uses `install` and `build` and reads the `luatex-*`
+  skills to validate the final PDF against their rules).
 
-Субагенты не запускают git-команды: сессия субагента на них зависает
-(симптом — зависший шаг конвейера при неизменной файловой системе).
-Единственное исключение — стейджинг `git add presentations/<NN-name>/`,
-который `pm` выполняет перед `nix build` (см. «`nix build` видит только
-отслеживаемые git-файлы»); коммиты не выполняет никто. У `c-expert` shell
-дополнительно ограничен компилятором (`gcc`/`cc`/`g++`) и запуском `.out`
-из `build/drafts/` — git-команды ему недоступны на уровне разрешений.
+### 2. tech-writer (`mode: subagent`)
+* **Role:** Subject-matter expert and fact-checker.
+* **Responsibilities:**
+  * Prepares structured presentation plans based on PM requirements.
+  * Writes final slide content and code listings in Russian Markdown.
+  * Saves drafts to `drafts/`.
+* **Context Access:** `websearch`, `webfetch`, shell except
+  `git commit` / `git push` / `git reset` (it may compile example
+  code to validate it), edits anywhere except `.opencode/**`,
+  `opencode.json`, `AGENTS.md`. No skills at all: every `skill`
+  action is denied, which is what keeps it away from the `luatex-*`
+  conventions — it must not see or load LaTeX rules.
 
-Требования к конфигам субагентов (`.opencode/agent/*.md`): opencode по
-умолчанию прячет у сессий субагентов инструменты `task` и `todowrite`,
-если в permission самого агента нет записи `task` (соответственно
-`todowrite`), — независимо от промпта. Поэтому у `pm` в frontmatter
-обязательно `task: allow` (иначе конвейер останавливается на шаге
-делегирования) и `question: allow` (согласование плана с пользователем).
-Frontmatter в V1-формате (`permission`) opencode V2 читает и
-автоматически конвертирует (`bash` → `shell`, `task` → `subagent`); в
-нативном V2-массиве `permissions` старые имена действий НЕ конвертируются
-(такой action молча делает правило недействительным) — там используйте
-`shell` и `subagent`.
+### 3. latex-designer (`mode: subagent`)
+* **Role:** Typesetter and build system engineer.
+* **Responsibilities:**
+  * Converts Markdown from `tech-writer` into clean LuaTeX code.
+  * Manages directory structures, code files in `src/`, and updates `Makefile`.
+  * Fixes compilation issues and visual overflows.
+* **Context Access:** shell except `git commit` / `git push` /
+  `git reset`; edits anywhere except `.opencode/**`,
+  `opencode.json`, `AGENTS.md`; access to all skills (loads
+  `build`, `luatex-document`, `luatex-presentation`).
 
-## Конвенции новых презентаций
+---
 
-- Директория `presentations/<NN-name>/`: NN — следующий номер серии
-  (текущий максимум + 1), name — kebab-case (пример: `02-pointers`).
-- Основной файл — `<name>.tex`; образец: `presentations/01-intro/intro.tex`
-  (`\documentclass[compress,aspectratio=169]{beamer}` + `presentationtemplate` +
-  `\subtitle{...}` + фреймы). Слайды — 16:9: опция `aspectratio=169`
-  обязательна в `documentclass` каждой презентации (из шаблонного пакета
-  задать нельзя — beamer закрывает `papersize` для `\newgeometry`).
-- Примеры кода на C — файлы `.c`/`.h` в директории презентации;
-  вставляются через `\myinputlisting[minted language=c]{presentations/<NN-name>}/<file>`
-  (пакет `mylisting`), короткие фрагменты — `\myinplacelisting`.
-  Фреймы с кодом получают опцию `[fragile]`.
-- Весь C-код в примерах должен быть корректным и компилируемым gcc.
-- Листинги кода не должны содержать строки длиннее 30 символов, если
-  листинг занимает шириной полслайда, и длиннее 60 символов, если он
-  занимает весь слайд.
-- Листинги кода не должны иметь более 15 строк: более длинный листинг
-  отмасштабировать (уменьшить размер шрифта), чтобы вписался по высоте.
-- Новый pdf подключается в Makefile в четырёх местах: цель `build`,
-  правило (образец — `01-intro.pdf`), цель `help`, цель `install`.
-- Черновики живут в `build/drafts/` (директория игнорируется git):
-  план — `build/drafts/<NN-name>.plan.md`, текст — `build/drafts/<NN-name>.md`.
+## Reference Repository
+
+The repository <https://github.com/cppdevcourse/documents> is the
+reference for project conventions (beamer layout, 8pt base font size,
+listing/terminal package options, footnotes, tables, validation).
+Clone it to `/tmp/opencode/` and consult its presentations,
+`Packages/`, `Presentations/presentationtemplate.sty` and the
+`new-presentation` skill when in doubt.
+
+## Communication & Iteration Rules
+1. **Content First:** `tech-writer` must deliver full content before `latex-designer` starts layout.
+2. **Layout Overflows:** If content doesn't fit a slide at `\small`, `latex-designer` signals `product-manager` to request a text split from `tech-writer`.
+3. **Strict Validation:** `product-manager` only accepts the task after a successful Nix production build check.
