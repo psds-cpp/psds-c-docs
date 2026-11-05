@@ -80,24 +80,42 @@ The skills contain details.
 
 - Keep LaTeX source lines under 100 characters.
 
-- Presentations set only `\title`.
-  No `\setbeamertemplate`, no `\setbeamerfont`, no local `\setlength`
-  hacks: all beamer customization lives in `presentationtemplate.sty`.
-  Do not override `\subtitle` from the template.
-  Documentclass: `\documentclass[compress, 8pt, aspectratio=169]{beamer}`;
-  load `mylisting`/`terminal` with `fontsize=\footnotesize`.
+- Every presentation starts with the STANDARD PREAMBLE from the
+  `luatex-presentation` skill, copied verbatim: `8pt`,
+  `aspectratio=169`, `presentationtemplate`, `mylisting`/`terminal`
+  with `fontsize=\small`, `textcomp`, `csquotes`, and the
+  `FV@SetupFont` left-margin block (it is standard, not a hack).
+  Set only `\title`; no `\subtitle` override, no
+  `\setbeamertemplate`/`\setbeamerfont`/`\setlength` hacks; the only
+  allowed additions are document-specific `\newcommand`s.
 
-- Footnotes: `\footnotemark` + `\footnotetext` without manual numbers
-  (numbering is automatic).
-  The mark attaches to a word in the text — never to a listing,
-  a frame title, or empty space.
+- Footnotes: `\footnotemark{}` + `\footnotetext{\url{...}}`,
+  numbering automatic (no manual numbers).
+  The mark attaches to the word it refers to — in the text or
+  inside the frame title; never to a listing or empty space.
   Footnote text is the URL only, no title or commentary.
 
-- Tables must have visible borders (`|` column separators and `\hline`).
+- Blocks on a frame are separated with `\bigbreak` (kernel command);
+  never ad hoc `\vspace{...}`.
+  Columns: `\begin{columns}[T]`, width `0.48\textwidth`.
+  Tables: `|` borders, `\hline` at top/bottom/under header,
+  `\renewcommand{\arraystretch}{1.5}`, `p{...cm}` text columns.
+  Frame titles: a few words, not a sentence.
+
+- A long listing is split across two frames with the SAME title:
+  part 1 ends with `lastline=N` + `\textit{To be continued \dots}`,
+  part 2 starts with `\textit{\dots continued}` and uses
+  `firstline=N+1`.
+
+- Typography: `\enquote{}` for quotes, `---` for dash, `\dots`
+  for ellipsis; no symbols that cannot be typed on a common
+  keyboard (`—`, `«»`, `…`, curly quotes).
+  Terminal: every command line is `!\shellcommand{...}!`,
+  arguments with spaces/special characters go in single quotes,
+  long paths in output are abbreviated with `!\dots!`.
 
 - Frame content must not touch the bottom edge of the slide
   (visible margin before the frame number).
-  Add space between an adjacent listing and terminal window.
 
 - Minted wraps long lines SILENTLY (no Overfull in the log).
   Before reporting done: every `src/` line must fit in ONE physical
@@ -105,5 +123,6 @@ The skills contain details.
   (`pdftoppm`) must be inspected for content touching the bottom edge.
 
 - Before reporting a document finished, run every check from the
-  `Validating presentations` section of `luatex-presentation` skill.
+  `Validating presentations` section of `luatex-presentation` skill,
+  including `check-style.sh`.
   Do not rely on memory of which checks exist.

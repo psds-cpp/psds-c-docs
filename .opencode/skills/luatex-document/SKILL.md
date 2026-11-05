@@ -116,6 +116,11 @@ When writing or changing LuaTeX code follow this rules:
   \end{itemize}
   ```
 
+- Do not use symbols that can't be typed on common keyboard.
+  For example, «, … and so on.
+
+- Always use `\enquote{}` for quotation.
+
 ## Fonts
 
 - Use only fonts from `fonts/` directory.
@@ -197,3 +202,10 @@ When writing or changing LuaTeX code follow this rules:
 
 - When a bare prompt (without a command) is needed, use
   `\shellprompt` from the same package, also inside `!...!`.
+
+- Use `\myhighlight` to highlight text. Example:
+  ```tex
+  \begin{terminalwindow}
+  !\shellcommand{gcc \myhighlight{yellow}{-O2} -o calc calc.c}!
+  \end{terminalwindow}
+  ```

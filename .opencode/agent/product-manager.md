@@ -78,6 +78,12 @@ Use this workflow when user asks to add new document.
   Verify the document against every rule of the applicable `luatex-*`
   skills yourself, including the full `Validating presentations`
   checklist (run the checks, do not trust the report).
+  The mechanical style check is part of that checklist:
+  `sh .opencode/skills/luatex-presentation/scripts/check-style.sh <NAME>`
+  — any violation (standard preamble, `fontsize=\small`,
+  non-keyboard symbols, bare `$` prompt, split-listing pairing)
+  means the document is NOT ready: send it back to **latex-designer**
+  before the user sees it.
   Check that the subagent's final report contains the line
   `Skills loaded:` with `luatex-document` in it;
   verify the subagent session history when in doubt.

@@ -73,7 +73,38 @@ Clone it to `/tmp/opencode/` and consult its presentations,
 `Packages/`, `Presentations/presentationtemplate.sty` and the
 `new-presentation` skill when in doubt.
 
+## House Style
+
+Presentations follow a strict house style (adapted from the
+`psds-build-systems-docs` harness, where it was derived from the
+user's manual fixes to presentation 01) codified in the
+`luatex-presentation` skill:
+
+- standard preamble: `8pt`, `aspectratio=169`, `presentationtemplate`,
+  `mylisting`/`terminal` with `fontsize=\small`, `textcomp`,
+  `csquotes`, and the `FV@SetupFont` left-margin block;
+- `\bigbreak` between frame blocks (no ad hoc `\vspace`), short
+  frame titles, `\begin{columns}[T]` at `0.48\textwidth`;
+- tables with `|` borders, `\hline` and `\renewcommand{\arraystretch}{1.5}`;
+- long listings split across two same-titled frames via
+  `lastline`/`firstline` with `\textit{To be continued \dots}` /
+  `\textit{\dots continued}` labels;
+- footnotes `\footnotemark{}` + `\footnotetext{\url{...}}`, the mark
+  attaches to a word — allowed inside the frame title;
+- `\enquote{}` for quotes, `---` for dash, `\dots` for ellipsis;
+  no symbols that cannot be typed on a common keyboard;
+- terminal: `!\shellcommand{...}!` for every command, single quotes
+  for arguments with spaces/special characters, `!\dots!` for
+  abbreviated paths in output;
+- `src/` examples are minimal, numbered in slide order where names
+  would collide, a "broken" example keeps the normal name and the
+  fix goes to `<name>.fixed`, the shown project tree matches the
+  real `src/` contents.
+
+Deviations are caught mechanically by
+`.opencode/skills/luatex-presentation/scripts/check-style.sh`.
+
 ## Communication & Iteration Rules
 1. **Content First:** `tech-writer` must deliver full content before `latex-designer` starts layout.
 2. **Layout Overflows:** If content doesn't fit a slide at `\small`, `latex-designer` signals `product-manager` to request a text split from `tech-writer`.
-3. **Strict Validation:** `product-manager` only accepts the task after a successful Nix production build check.
+3. **Strict Validation:** `product-manager` only accepts the task after a successful Nix production build check, the full `Validating presentations` checklist and a clean `check-style.sh` run.

@@ -40,8 +40,34 @@ Keep doing it until **latex-designer** stops asking.
 
 - Texts must be written in Russian.
 
+- Write drafts with plain keyboard punctuation: `---` for dash,
+  straight quotes, `...` for ellipsis.
+  Do not use `—`, `«»`, `…` or curly quotes: the downstream
+  typesetting depends on it.
+
 - Try to validate source code for examples as much as it's possible.
   For instance, when creating C code for listing try to compile
   source file first.
+
+- Examples must be minimal: files in `src/` contain exactly what the
+  slides show and nothing else.
+  Do not copy extra targets, comments or boilerplate
+  from real-world projects into example files.
+  Number example files in slide order where names would collide
+  (`main.01.c`, `main.02.c`, ...); otherwise keep descriptive names.
+
+- A "broken" example that is fixed later keeps the normal file name
+  for the broken version (e.g. `main.c`) and the fixed version goes
+  to a separate file with the `.fixed` suffix (`main.c.fixed`).
+
+- The project tree shown on the slides must match the real `src/`
+  contents (file names and subdirectories).
+
+- Terminal transcripts must be the real output of the commands
+  (run the example, copy the output); do not invent or paraphrase
+  output.
+  Long paths in the output may be abbreviated with `...`.
+  Arguments with spaces or special characters are wrapped in single
+  quotes.
 
 - When in doubt prefer using `websearch` and `webfetch`.
