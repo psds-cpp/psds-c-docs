@@ -1,0 +1,17 @@
+\NeedsTeXFormat{LaTeX2e}
+\ProvidesPackage{mytask}
+
+\RequirePackage{tcolorbox}
+
+\newtcolorbox{mytask}[1][]{
+    colback=yellow!50!white,
+    boxrule=0.02cm,
+    colframe=black,
+    sharp corners,
+    left=0mm,
+    right=0mm,
+    top=0mm,
+    bottom=0mm,
+    before upper={\textbf{Задание}:\:},
+    #1
+}

@@ -1,12 +1,22 @@
-% !TeX TS-program = xelatex
-
-\documentclass[compress,aspectratio=169]{beamer}
+\documentclass[compress, 8pt, aspectratio=169]{beamer}
 
 \usepackage{presentationtemplate}
-\usepackage[fontsize=\footnotesize, askip=3mm]{terminal}
-\usepackage[fontsize=\footnotesize, linenosfontsize=\tiny, askip=3mm]{mylisting}
+\usepackage[fontsize=\small,linenosfontsize=\tiny,askip=3mm]
+  {mylisting}
+\usepackage[fontsize=\small,askip=3mm]{terminal}
+\usepackage{textcomp}
+\usepackage[autostyle=true]{csquotes}
 
 \title{Hello, C!}
+
+\makeatletter
+\newdimen\cm@FVleftmargin
+\let\cm@FVSetupFont\FV@SetupFont
+\def\FV@SetupFont{%
+  \cm@FVleftmargin=\leftmargin
+  \cm@FVSetupFont
+  \let\leftmargin\cm@FVleftmargin}
+\makeatother
 
 \begin{document}
 
@@ -17,12 +27,12 @@
     \frametitle{Hello, world!}
 
     \myinputlisting[minted language=c]
-        {presentations/01-intro/}
+        {presentations/01-intro/src/}
         {hello-world.c}
 
-    \begin{terminalwindow}[||]
-|\shellcommand{gcc hello-world.c}|
-|\shellcommand{./a.out}|
+    \begin{terminalwindow}
+!\shellcommand{gcc hello-world.c}!
+!\shellcommand{./a.out}!
 Hello, world!
     \end{terminalwindow}
 
@@ -51,6 +61,7 @@ Hello, world!
 
         \begin{column}{0.6\textwidth}
 
+            % in-place: for at file scope is not valid C
             \begin{myinplacelisting}[minted language=c]
 // C99
 for (int i = 0; i < 10; i++) {

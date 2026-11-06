@@ -1,13 +1,24 @@
-% !TeX TS-program = xelatex
-
-\documentclass[compress,aspectratio=169]{beamer}
+\documentclass[compress, 8pt, aspectratio=169]{beamer}
 
 \usepackage{presentationtemplate}
-\usepackage[fontsize=\footnotesize, askip=3mm]{terminal}
-\usepackage[fontsize=\footnotesize, linenosfontsize=\tiny, askip=3mm]{mylisting}
-\usepackage{myitemize}
+\usepackage[fontsize=\small,linenosfontsize=\tiny,askip=3mm]
+  {mylisting}
+\usepackage[fontsize=\small,askip=3mm]{terminal}
+\usepackage{textcomp}
+\usepackage[autostyle=true]{csquotes}
 
 \title{Проектирование на C}
+
+\makeatletter
+\newdimen\cm@FVleftmargin
+\let\cm@FVSetupFont\FV@SetupFont
+\def\FV@SetupFont{%
+  \cm@FVleftmargin=\leftmargin
+  \cm@FVSetupFont
+  \let\leftmargin\cm@FVleftmargin}
+\makeatother
+
+\usepackage{myitemize}
 
 \begin{document}
 
@@ -19,13 +30,13 @@
 
     \begin{myitemize}
 
-        \item В C нет классов, наследования и исключений —
+        \item В C нет классов, наследования и исключений ---
             но код должен быть поддерживаемым и масштабируемым.
 
         \item Проектирование на C собирается из простых механизмов:
             \texttt{struct}, указатели, указатели на функции, \texttt{enum}.
 
-        \item Идиома — устойчивое сочетание этих механизмов,
+        \item Идиома --- устойчивое сочетание этих механизмов,
             которое повторяется из проекта в проект.
 
     \end{myitemize}
@@ -38,17 +49,17 @@
 
     \begin{myitemize}
 
-        \item opaque pointer — сокрытие представления;
+        \item opaque pointer --- сокрытие представления;
 
-        \item handle — число вместо указателя;
+        \item handle --- число вместо указателя;
 
-        \item init/deinit — жизненный цикл объекта;
+        \item init/deinit --- жизненный цикл объекта;
 
-        \item возврат ошибок — коды и out-параметры;
+        \item возврат ошибок --- коды и out-параметры;
 
-        \item function table — поведение как данные;
+        \item function table --- поведение как данные;
 
-        \item tagged union — аналог \texttt{std::variant} на C.
+        \item tagged union --- аналог \texttt{std::variant} на C.
 
     \end{myitemize}
 
@@ -67,7 +78,7 @@
                 \item Потребитель видит только указатель \texttt{sec\_t*}
                     и объявления функций.
 
-                \item Определение \texttt{struct} — только в файле .c
+                \item Определение \texttt{struct} --- только в файле .c
                     (реализации).
 
                 \item Представление можно менять без пересборки клиентов.
@@ -79,7 +90,7 @@
         \begin{column}{0.4\textwidth}
 
             \myinputlisting[minted language=c]
-                {presentations/04-c-design/}
+                {presentations/04-c-design/src/}
                 {opaque.h}
 
         \end{column}
@@ -96,7 +107,8 @@
 
         \begin{column}{0.48\textwidth}
 
-        Пример реализации библиотеки\footnotemark{}.
+        Пример реализации библиотеки: объект хранится
+        в \texttt{static}-переменной (намеренное упрощение).
 
         \end{column}
 
@@ -106,17 +118,12 @@
                 minted options={fontsize=\scriptsize, breaklines,
                     breakanywhere, linenos, escapeinside=||,
                     numbersep=2pt}]
-                {presentations/04-c-design/}
+                {presentations/04-c-design/src/}
                 {opaque.c}
 
         \end{column}
 
     \end{columns}
-
-    \footnotetext{%
-        Объект хранится в \texttt{static}-переменной.
-        Это намеренное упрощение.
-    }
 
 \end{frame}
 
@@ -126,14 +133,14 @@
 
     \begin{myitemize}
 
-        \item Handle — это индекс объекта в таблице реализации:
+        \item Handle --- это индекс объекта в таблице реализации:
             потребитель получает число, а не указатель.
 
         \item Развитие opaque pointer: представление по-прежнему
-            скрыто, но вместо указателя — обычное целое.
+            скрыто, но вместо указателя --- обычное целое.
 
         \item Плюсы: легко передавать, хранить и сравнивать;
-            «висящих» указателей на стороне клиента не бывает.
+            \enquote{висящих} указателей на стороне клиента не бывает.
 
         \item Реализация: пул объектов + поиск свободного места
             + невалидное значение.
@@ -151,7 +158,7 @@
     \bigbreak
 
     \myinputlisting[minted language=c]
-        {presentations/04-c-design/}
+        {presentations/04-c-design/src/}
         {handle.h}
 
 \end{frame}
@@ -167,7 +174,7 @@
     \myinputlisting[minted language=c,
         minted options={fontsize=\scriptsize, breaklines,
             breakanywhere, linenos, escapeinside=||, numbersep=2pt}]
-        {presentations/04-c-design/}
+        {presentations/04-c-design/src/}
         {handle.c}
 
 \end{frame}
@@ -182,7 +189,7 @@
             инициализирует объект, \texttt{deinit} освобождает
             ресурсы.
 
-        \item \texttt{init} может провалиться — вернёт
+        \item \texttt{init} может провалиться --- вернёт
             \texttt{NULL}; результат \texttt{init}
             всегда проверяем.
 
@@ -205,7 +212,7 @@
     \bigbreak
 
     \myinputlisting[minted language=c]
-        {presentations/04-c-design/}
+        {presentations/04-c-design/src/}
         {lifecycle.h}
 
 \end{frame}
@@ -221,7 +228,7 @@
     \myinputlisting[minted language=c,
         minted options={fontsize=\scriptsize, breaklines,
             breakanywhere, linenos, escapeinside=||, numbersep=2pt}]
-        {presentations/04-c-design/}
+        {presentations/04-c-design/src/}
         {lifecycle.c}
 
 \end{frame}
@@ -232,12 +239,12 @@
 
     \begin{myitemize}
 
-        \item Код возврата: 0 = OK, > 0 — код ошибки;
+        \item Код возврата: 0 = OK, > 0 --- код ошибки;
             явно и самоочевидно.
 
         \item errno-стиль: вернуть \texttt{-1}/\texttt{NULL},
-            код — в переменной \texttt{errno} (POSIX);
-            слабость: переменная общая внутри потока —
+            код --- в переменной \texttt{errno} (POSIX);
+            слабость: переменная общая внутри потока ---
             любой вызов библиотеки может её перезаписать.
 
     \end{myitemize}
@@ -252,46 +259,19 @@
 
         \begin{column}{0.48\textwidth}
 
-            \begin{mytitledinplacelisting}[minted language=c]{Пример с кодом возврата}
-typedef enum {
-    ERR_OK = 0,
-    ERR_EMPTY,
-} err_t;
-
-err_t parse(int *out,
-            char *s);
-
-int main(int argc, char **v) {
-    int i = 0;
-    if (parse(&i, v[1]) != 0) {
-        // process error...
-    }
-    return 0;
-}
-            \end{mytitledinplacelisting}
+            \mytitledinputlisting[minted language=c]
+                {Пример с кодом возврата}
+                {presentations/04-c-design/src/}
+                {error-code.c}
 
         \end{column}
 
         \begin{column}{0.48\textwidth}
 
-            \begin{mytitledinplacelisting}[minted language=c]{Пример с errno}
-typedef enum {
-    ERR_OK = 0,
-    ERR_EMPTY,
-} err_t;
-
-extern err_t err;
-
-int parse(char *s);
-
-int main(int argc, char **v) {
-    int i = parse(v[1]);
-    if (err) {
-        // process error
-        // and discard i...
-    }
-}
-            \end{mytitledinplacelisting}
+            \mytitledinputlisting[minted language=c]
+                {Пример с errno}
+                {presentations/04-c-design/src/}
+                {errno.c}
 
         \end{column}
 
@@ -305,13 +285,13 @@ int main(int argc, char **v) {
 
     \begin{myitemize}
 
-        \item Структура из указателей на функции — таблица операций
-            («vtable» на C).
+        \item Структура из указателей на функции --- таблица
+            операций (\enquote{vtable} на C).
 
         \item Объект = данные + указатель на свою
             таблицу операций.
 
-        \item Разные «классы» — разные таблицы
+        \item Разные \enquote{классы} --- разные таблицы
             с общими подписями.
 
     \end{myitemize}
@@ -323,7 +303,7 @@ int main(int argc, char **v) {
     \frametitle{Function table}
 
     \myinputlisting[minted language=c]
-        {presentations/04-c-design/}
+        {presentations/04-c-design/src/}
         {vtable.c}
 
 \end{frame}
@@ -335,7 +315,9 @@ int main(int argc, char **v) {
     \begin{myitemize}
 
         \item Tagged union позволяет создать sum type
-            из теории типов\footnotemark{}.
+            из теории типов: в product type данные
+            хранятся одновременно (И), в sum type ---
+            только один вариант (ИЛИ).
 
         \item Тип кодируется при помощи константы-тега,
             а само значение хранится в объединении
@@ -345,10 +327,6 @@ int main(int argc, char **v) {
 
     \end{myitemize}
 
-    \footnotetext{В product type данные хранятся одновременно (И),
-        а в sum-type в конкретный момент времени хранится только один из
-        возможных вариантов (ИЛИ).}
-
 \end{frame}
 
 \begin{frame}[fragile]
@@ -356,7 +334,7 @@ int main(int argc, char **v) {
     \frametitle{Tagged union: пример}
 
     \myinputlisting[minted language=c]
-        {presentations/04-c-design/}
+        {presentations/04-c-design/src/}
         {tagged.c}
 
 \end{frame}
@@ -373,12 +351,12 @@ int main(int argc, char **v) {
 
         \item Ошибки: коды возврата, out-параметры, errno.
 
-        \item Поведение: function table («vtable» на C).
+        \item Поведение: function table (\enquote{vtable} на C).
 
         \item Данные: tagged union (аналог \texttt{std::variant} на C).
 
         \item Идиомы комбинируются: API библиотеки на C можно
-            устроить «как класс».
+            устроить \enquote{как класс}.
 
     \end{myitemize}
 

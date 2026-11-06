@@ -52,7 +52,9 @@
     };
 
     devShells.${system}.default = pkgs.mkShellNoCC {
-      packages = buildInputs;
+      packages = buildInputs ++ [
+        pkgs.poppler-utils
+      ];
     };
 
     checks.${system}.fmt = pkgs.runCommand "check-fmt" { } ''

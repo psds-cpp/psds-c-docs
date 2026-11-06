@@ -17,6 +17,9 @@
 \newcommand{\shellprompt}{>}
 \newcommand{\shellcommand}[1]{\shellprompt \space \textbf{#1}}
 
+% highlight text in terminal
+\newcommand{\myhighlight}[2]{\setlength{\fboxsep}{1pt}\colorbox{#1}{#2}}
+
 \NewTCBListing{terminalwindow}{ O{!!} O{} }{
     listing engine=minted,
     title=>\_\null\hfill x,

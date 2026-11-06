@@ -63,6 +63,14 @@
     #1
 }
 
+\newtcbinputlisting{\mytitledinputlisting}[4][]{%
+    listing file={#3#4},
+    title=\detokenize{#2},
+    fonttitle=\it\MLS@fontsize,
+    listingbase,
+    #1
+}
+
 \newtcblisting{myinplacelisting}[1][]{%
     listingbase,
     #1

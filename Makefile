@@ -56,27 +56,27 @@ endef
 
 01-intro.pdf: \
 	presentations/01-intro/intro.tex \
-	$(wildcard presentations/01-intro/*.c) \
-	$(wildcard presentations/01-intro/*.h)
+	$(wildcard presentations/01-intro/src/*.c) \
+	$(wildcard presentations/01-intro/src/*.h)
 	$(call generate_pdf,$<,$@)
 
 02-c-vs-cpp.pdf: \
 	presentations/02-c-vs-cpp/c-vs-cpp.tex \
-	$(wildcard presentations/02-c-vs-cpp/*.c) \
-	$(wildcard presentations/02-c-vs-cpp/*.cpp) \
-	$(wildcard presentations/02-c-vs-cpp/*.h)
+	$(wildcard presentations/02-c-vs-cpp/src/*.c) \
+	$(wildcard presentations/02-c-vs-cpp/src/*.cpp) \
+	$(wildcard presentations/02-c-vs-cpp/src/*.h)
 	$(call generate_pdf,$<,$@)
 
 03-storage-duration.pdf: \
 	presentations/03-storage-duration/storage-duration.tex \
-	$(wildcard presentations/03-storage-duration/*.c) \
-	$(wildcard presentations/03-storage-duration/*.h) \
-	$(wildcard presentations/03-storage-duration/extern/*.c) \
-	$(wildcard presentations/03-storage-duration/extern/*.h)
+	$(wildcard presentations/03-storage-duration/src/*.c) \
+	$(wildcard presentations/03-storage-duration/src/*.h) \
+	$(wildcard presentations/03-storage-duration/src/extern/*.c) \
+	$(wildcard presentations/03-storage-duration/src/extern/*.h)
 	$(call generate_pdf,$<,$@)
 
 04-c-design.pdf: \
 	presentations/04-c-design/04-c-design.tex \
-	$(wildcard presentations/04-c-design/*.c) \
-	$(wildcard presentations/04-c-design/*.h)
+	$(wildcard presentations/04-c-design/src/*.c) \
+	$(wildcard presentations/04-c-design/src/*.h)
 	$(call generate_pdf,$<,$@)

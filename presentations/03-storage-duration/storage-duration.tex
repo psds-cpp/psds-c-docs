@@ -1,15 +1,26 @@
-% !TeX TS-program = xelatex
-
-\documentclass[compress,aspectratio=169]{beamer}
+\documentclass[compress, 8pt, aspectratio=169]{beamer}
 
 \usepackage{presentationtemplate}
-\usepackage[fontsize=\footnotesize, askip=3mm]{terminal}
-\usepackage[fontsize=\footnotesize, linenosfontsize=\tiny, askip=3mm]{mylisting}
+\usepackage[fontsize=\small,linenosfontsize=\tiny,askip=3mm]
+  {mylisting}
+\usepackage[fontsize=\small,askip=3mm]{terminal}
+\usepackage{textcomp}
+\usepackage[autostyle=true]{csquotes}
+
+\title{Время хранения и время жизни объектов}
+
+\makeatletter
+\newdimen\cm@FVleftmargin
+\let\cm@FVSetupFont\FV@SetupFont
+\def\FV@SetupFont{%
+  \cm@FVleftmargin=\leftmargin
+  \cm@FVSetupFont
+  \let\leftmargin\cm@FVleftmargin}
+\makeatother
+
 \usepackage{myitemize}
 
 \usetikzlibrary{matrix, positioning}
-
-\title{Время хранения и время жизни объектов}
 
 \begin{document}
 
@@ -22,7 +33,7 @@
     У объектов C есть две характеристики, которые
     тесно связаны между собой.
 
-    \bigskip
+    \bigbreak
 
     \begin{myitemize}
 
@@ -48,22 +59,15 @@
             и уничтожается при выходе из него.
 
         \item При повторном входе в блок создаётся новый
-            объект — предыдущий уже не существует.
+            объект --- предыдущий уже не существует.
 
     \end{myitemize}
 
     \bigbreak
 
-    \begin{myinplacelisting}[minted language=c]
-int main(void) {
-    char c0 = 0; /* c0: begins */
-    (void)c0; {
-        char c1 = 0; /* c1: begins */
-        (void)c1;
-    } /* c1: ends */
-    return 0;
-} /* c0: ends */
-    \end{myinplacelisting}
+    \myinputlisting[minted language=c]
+        {presentations/03-storage-duration/src/}
+        {automatic.c}
 
 \end{frame}
 
@@ -119,9 +123,12 @@ int main(void) {
                     };
 
                     % Метки слева (адреса памяти)
-                    \node[left=1.5mm of stack-1-1.west, font=\footnotesize\ttfamily] {0x7ffccbf9323e};
-                    \node[left=1.5mm of stack-2-1.west, font=\footnotesize\ttfamily] {0x7ffccbf9323f};
-                    \node[left=1.5mm of stack-3-1.west, font=\footnotesize\ttfamily] {0x7ffccbf93240};
+                    \node[left=1.5mm of stack-1-1.west,
+                        font=\footnotesize\ttfamily] {0x7ffccbf9323e};
+                    \node[left=1.5mm of stack-2-1.west,
+                        font=\footnotesize\ttfamily] {0x7ffccbf9323f};
+                    \node[left=1.5mm of stack-3-1.west,
+                        font=\footnotesize\ttfamily] {0x7ffccbf93240};
 
                     \node[right=1.5mm of stack-3-1.east, font=\footnotesize\itshape] {свободно};
                 \end{tikzpicture}
@@ -130,7 +137,7 @@ int main(void) {
 
             \footnotesize
             \texttt{c1} создан над \texttt{c0} (по меньшему
-            адресу): LIFO — при выходе из вложенного блока
+            адресу): LIFO --- при выходе из вложенного блока
             \texttt{c1} уничтожается раньше.
 
         \end{column}
@@ -153,7 +160,7 @@ int main(void) {
         \begin{column}{0.44\textwidth}
 
             \myinputlisting[minted language=c]
-                {presentations/03-storage-duration/}
+                {presentations/03-storage-duration/src/}
                 {uninit.c}
 
         \end{column}
@@ -162,11 +169,11 @@ int main(void) {
 
             \begin{terminalwindow}
 !\shellcommand{gcc -Wall uninit.c}!
-uninit.c: In function ‘main’:
-uninit.c:6:5: warning: ‘i’ is used uninitialized [-Wuninitialized]
+uninit.c: In function 'main':
+uninit.c:6:5: warning: 'i' is used uninitialized [-Wuninitialized]
     6 |     printf("%d\n", i);
       |     ^~~~~~~~~~~~~~~~~
-uninit.c:5:9: note: ‘i’ was declared here
+uninit.c:5:9: note: 'i' was declared here
     5 |     int i;
       |         ^
             \end{terminalwindow}
@@ -188,7 +195,7 @@ uninit.c:5:9: note: ‘i’ was declared here
             \begin{myitemize}
                 \footnotesize
 
-                \item Куча (heap) — регион памяти,
+                \item Куча (heap) --- регион памяти,
                     отдельный от стека, без
                     LIFO-порядка стека.
 
@@ -202,8 +209,11 @@ uninit.c:5:9: note: ‘i’ was declared here
 
         \begin{column}{0.54\textwidth}
 
-            \myinputlisting[minted language=c, minted options={fontsize=\small, breaklines, breakanywhere, linenos, escapeinside=||, numbersep=2pt}]
-                {presentations/03-storage-duration/}
+            \myinputlisting[minted language=c,
+                minted options={fontsize=\small, breaklines,
+                breakanywhere, linenos, escapeinside=||,
+                numbersep=2pt}]
+                {presentations/03-storage-duration/src/}
                 {malloc-heap.c}
 
         \end{column}
@@ -218,17 +228,17 @@ uninit.c:5:9: note: ‘i’ was declared here
 
     \begin{myitemize}
 
-        \item \texttt{malloc} возвращает \texttt{void*} —
+        \item \texttt{malloc} возвращает \texttt{void*} ---
             в C \texttt{void*} неявно приводится к любому
             указателю на объект, каст не нужен.
 
         \item При нехватке памяти \texttt{malloc}
-            возвращает \texttt{NULL} — результат
+            возвращает \texttt{NULL} --- результат
             обязательно проверяйте до использования.
 
-        \item Каждому \texttt{malloc} — ровно один
+        \item Каждому \texttt{malloc} --- ровно один
             \texttt{free}; использование памяти после
-            \texttt{free} и повторный \texttt{free} —
+            \texttt{free} и повторный \texttt{free} ---
             неопределённое поведение.
 
         \item Размер выделяется в байтах:
@@ -247,7 +257,7 @@ uninit.c:5:9: note: ‘i’ was declared here
         \begin{column}{0.44\textwidth}
 
             \myinputlisting[minted language=c]
-                {presentations/03-storage-duration/}
+                {presentations/03-storage-duration/src/}
                 {static-objects.c}
 
         \end{column}
@@ -260,8 +270,8 @@ uninit.c:5:9: note: ‘i’ was declared here
                 \item Объекты в глобальной области видимости
                     (\texttt{g} и \texttt{h}) живут всю
                     программу и инициализируются нулём
-                    автоматически: скаляры — 0, указатели
-                    — \texttt{NULL}.
+                    автоматически: скаляры --- 0, указатели
+                    --- \texttt{NULL}.
 
                 \item Локальный объект \texttt{c} с \texttt{static}
                     виден только в функции \texttt{f}, живёт всю
@@ -283,8 +293,11 @@ uninit.c:5:9: note: ‘i’ was declared here
 
         \begin{column}{0.6\textwidth}
 
-            \myinputlisting[minted language=c, minted options={fontsize=\scriptsize, breaklines, breakanywhere, linenos, escapeinside=||, numbersep=2pt}]
-                {presentations/03-storage-duration/}
+            \myinputlisting[minted language=c,
+                minted options={fontsize=\scriptsize, breaklines,
+                breakanywhere, linenos, escapeinside=||,
+                numbersep=2pt}]
+                {presentations/03-storage-duration/src/}
                 {static-counter.c}
 
         \end{column}
@@ -311,17 +324,17 @@ uninit.c:5:9: note: ‘i’ was declared here
 
     Связывание (linkage) определяет, можно ли обращаться
     к имени объекта (или функции) из другой единицы
-    трансляции\footnotemark{}.
+    трансляции (один .c-файл после препроцессора).
 
     \bigbreak
 
     \begin{myitemize}
 
-        \item External linkage — по умолчанию у
+        \item External linkage --- по умолчанию у
             глобальных объектов и функций: имя доступно
             из других файлов (через \texttt{extern}).
 
-        \item Internal linkage — глобальный объект
+        \item Internal linkage --- глобальный объект
             с \texttt{static} в начале файла: имя
             существует только в этом файле (защита от
             конфликтов имён).
@@ -330,12 +343,10 @@ uninit.c:5:9: note: ‘i’ was declared here
 
     \bigbreak
 
-    \begin{mytitledinplacelisting}[minted language=c]{Different linkages}
-int x;         /* external linkage */
-static int y;  /* internal linkage */
-    \end{mytitledinplacelisting}
-
-    \footnotetext{Единица трансляции — один .c-файл после препроцессора.}
+    \mytitledinputlisting[minted language=c]
+        {Different linkages}
+        {presentations/03-storage-duration/src/}
+        {linkage.c}
 
 \end{frame}
 
@@ -344,7 +355,7 @@ static int y;  /* internal linkage */
     \frametitle{Определение переменной с внешним связыванием}
 
     Объект определяется один раз в одной единице трансляции;
-    во всех остальных — только объявляется.
+    во всех остальных --- только объявляется.
 
     \normalsize
 
@@ -353,19 +364,22 @@ static int y;  /* internal linkage */
         \begin{column}{0.48\textwidth}
 
             \myinputlisting[minted language=c]
-                {presentations/03-storage-duration/extern/}
+                {presentations/03-storage-duration/src/extern/}
                 {foo.h}
 
             \myinputlisting[minted language=c]
-                {presentations/03-storage-duration/extern/}
+                {presentations/03-storage-duration/src/extern/}
                 {foo.c}
 
         \end{column}
 
         \begin{column}{0.48\textwidth}
 
-            \myinputlisting[minted language=c, minted options={fontsize=\scriptsize, breaklines, breakanywhere, linenos, escapeinside=||, numbersep=2pt}, after skip=0mm]
-                {presentations/03-storage-duration/extern/}
+            \myinputlisting[minted language=c,
+                minted options={fontsize=\scriptsize, breaklines,
+                breakanywhere, linenos, escapeinside=||,
+                numbersep=2pt}, after skip=0mm]
+                {presentations/03-storage-duration/src/extern/}
                 {main.c}
 
             \bigbreak
@@ -410,8 +424,8 @@ static int y;  /* internal linkage */
 
     \scriptsize
     Нулевая инициализация по умолчанию: static storage
-    duration (глобальные и локальные \texttt{static}) — да;
-    automatic и dynamic — нет (неопределённое значение).
+    duration (глобальные и локальные \texttt{static}) --- да;
+    automatic и dynamic --- нет (неопределённое значение).
 
 \end{frame}
 
