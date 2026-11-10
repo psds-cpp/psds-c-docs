@@ -1,0 +1,1015 @@
+\documentclass[compress, 8pt, aspectratio=169]{beamer}
+
+\usepackage{presentationtemplate}
+\usepackage[fontsize=\small,linenosfontsize=\tiny,askip=3mm]
+  {mylisting}
+\usepackage[fontsize=\small,askip=3mm]{terminal}
+\usepackage{textcomp}
+\usepackage[autostyle=true]{csquotes}
+
+\title{Фазы трансляции}
+
+\makeatletter
+\newdimen\tp@FVleftmargin
+\let\tp@FVSetupFont\FV@SetupFont
+\def\FV@SetupFont{%
+  \tp@FVleftmargin=\leftmargin
+  \tp@FVSetupFont
+  \let\leftmargin\tp@FVleftmargin}
+\makeatother
+
+\begin{document}
+
+\frame[plain]{\titlepage}
+
+% ------------------------------------------------------------------
+% Слайд 2. Фазы трансляции
+% ------------------------------------------------------------------
+
+\begin{frame}
+
+    \frametitle{Фазы трансляции}
+
+    \begin{enumerate}
+
+        \item Mapping source characters
+
+        \item Splicing lines
+
+        \item Lexing
+
+        \item \textbf{Preprocessing (препроцессор)}
+
+        \item Converting character constants and string literals
+            to execution character set
+
+        \item Concatenating string literals
+
+        \item \textbf{Compiling (компиляция)}
+
+        \item \textbf{Linking (линковка)}
+
+    \end{enumerate}
+
+    \bigbreak
+
+    Более подробно:
+    \href{https://en.cppreference.com/w/c/language/translation_phases}
+        {eng},
+    \href{https://ru.cppreference.com/w/c/language/translation_phases}
+        {ru}.
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 3. Компиляторы C
+% ------------------------------------------------------------------
+
+\begin{frame}
+
+    \frametitle{Компиляторы C}
+
+    \begin{itemize}
+
+        \item \texttt{\textbf{gcc}} от GNU Compiler Collection (GCC)
+
+        \item \texttt{\textbf{clang}} от Low Level Virtual Machine (LLVM)
+
+        \item Microsoft Visual C (MSVC)
+
+        \item и др.
+
+    \end{itemize}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 4. Препроцессор: схема
+% ------------------------------------------------------------------
+
+\begin{frame}
+
+    \frametitle{Препроцессор}
+
+    \centering
+
+    \begin{tikzpicture}[node distance = 5cm]
+
+        \node (source1) {
+            \includegraphics[width=1.7cm]
+                {presentations/images/source_code.png}
+        };
+        \node (source2) [right=of source1] {
+            \includegraphics[width=1.7cm]
+                {presentations/images/source_code.png}
+        };
+
+        \draw[->, ultra thick] (source1.east) -- (source2.west)
+            node[midway, above, align=center]
+                {Работа\\препроцессора};
+
+    \end{tikzpicture}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 5. Препроцессор: директива #define
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Препроцессор: директива \\ \texttt{\#define}}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.5\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/}
+                {defines-example.c}
+
+        \end{column}
+
+        \begin{column}{0.5\textwidth}
+
+            \begin{terminalwindow}
+!\shellcommand{gcc \myhighlight{yellow}{-E} defines-example.c}!
+# 0 "defines-example.c"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "/nix/store/!\dots!/include/stdc-predef.h" 1 3 4
+# 0 "<command-line>" 2
+# 1 "defines-example.c"
+
+
+
+
+int main(void) {
+    int i = 1 + 32;
+    return 0;
+}
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 6. Препроцессор: директива #define (макрос с параметром)
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Препроцессор: директива \\ \texttt{\#define}}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.5\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/}
+                {defines-param-example.c}
+
+        \end{column}
+
+        \begin{column}{0.5\textwidth}
+
+            \begin{terminalwindow}
+!\shellcommand{gcc defines-param-example.c}!
+!\shellcommand{./a.out}!
+1, 3.14, text
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 7. Препроцессор: директива #include
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Препроцессор: директива \\ \texttt{\#include}}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.5\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/}
+                {include-header.h}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/}
+                {include-source.c}
+
+        \end{column}
+
+        \begin{column}{0.5\textwidth}
+
+            \begin{terminalwindow}
+!\shellcommand{gcc -E include-source.c}!
+# 0 "include-source.c"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "/nix/store/!\dots!/include/stdc-predef.h" 1 3 4
+# 0 "<command-line>" 2
+# 1 "include-source.c"
+# 1 "include-header.h" 1
+!\myhighlight{yellow}{int a = 0;}!
+# 2 "include-source.c" 2
+
+int main(void) {
+    int b = a;
+    return 0;
+}
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 8. Препроцессор: директива #pragma
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Препроцессор: директива \\ \texttt{\#pragma}}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.5\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/}
+                {pragma-example.h}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/}
+                {pragma-example.c}
+
+        \end{column}
+
+        \begin{column}{0.5\textwidth}
+
+            \begin{terminalwindow}
+!\shellcommand{gcc -E pragma-example.c}!
+# 0 "pragma-example.c"
+# 0 "<built-in>"
+# 0 "<command-line>"
+# 1 "/nix/store/!\dots!/include/stdc-predef.h" 1 3 4
+# 0 "<command-line>" 2
+# 1 "pragma-example.c"
+# 1 "pragma-example.h" 1
+       
+
+const double PI = 3.14;
+# 2 "pragma-example.c" 2
+
+
+
+
+int main(void) {
+    double pi = PI;
+}
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 9. Компиляция: схема
+% ------------------------------------------------------------------
+
+\begin{frame}
+
+    \frametitle{Компиляция}
+
+    \centering
+
+    \begin{tikzpicture}[node distance = 5cm]
+
+        \node (source) {
+            \includegraphics[width=1.7cm]
+                {presentations/images/source_code.png}
+        };
+        \node (binary) [right=of source] {
+            \includegraphics[width=1.7cm]
+                {presentations/images/binary-file.png}
+        };
+        \node [below=0mm of binary] { \texttt{*.o} };
+
+        \draw[->, ultra thick] (source.east) -- (binary.west)
+            node[midway, above] {Компиляция};
+
+    \end{tikzpicture}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 10. Компиляция: objdump -f и -tC
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Компиляция}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.25\textwidth}
+
+            \myinputlisting[minted language=c,
+                minted options={
+                    fontsize=\scriptsize,
+                    breaklines,
+                    breakanywhere,
+                    linenos,
+                    escapeinside=||,
+                    numbersep=2pt
+                }]
+                {presentations/05-translation-phases/src/}
+                {comp-example.c}
+
+        \end{column}
+
+        \begin{column}{0.75\textwidth}
+
+            \begin{terminalwindow}
+!\shellcommand{gcc \myhighlight{yellow}{-c} comp-example.c -o comp-example.o}!
+!\shellcommand{objdump -f comp-example.o}!
+
+comp-example.o:     file format !\myhighlight{green}{elf64-x86-64}!
+architecture: i386:x86-64, flags 0x00000011:
+HAS_RELOC, HAS_SYMS
+start address 0x0000000000000000
+!\shellcommand{objdump \myhighlight{yellow}{-tC} comp-example.o}!
+
+comp-example.o:     file format elf64-x86-64
+
+SYMBOL TABLE:
+0000000000000000 l    df *ABS*  0000000000000000 comp-example.c
+0000000000000000 l    d  .text  0000000000000000 .text
+0000000000000000 l    d  .rodata        0000000000000000 .rodata
+0000000000000000 g     F .text  000000000000000e !\myhighlight{green}{PI}!
+000000000000000e g     F .text  000000000000001b  !\myhighlight{green}{main}!
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 11. Компиляция: objdump -d (целиком)
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Компиляция}
+
+            \begin{terminalwindow}
+!\shellcommand{objdump \myhighlight{yellow}{-d} comp-example.o}!
+
+comp-example.o:     file format elf64-x86-64
+
+
+Disassembly of section .text:
+
+0000000000000000 <PI>:
+   0:   55                      push   %rbp
+   1:   48 89 e5                mov    %rsp,%rbp
+   4:   f3 0f 10 05 00 00 00    movss  0x0(%rip),%xmm0        # c <PI+0xc>
+   b:   00 
+   c:   5d                      pop    %rbp
+   d:   c3                      ret
+
+000000000000000e <main>:
+   e:   55                      push   %rbp
+   f:   48 89 e5                mov    %rsp,%rbp
+  12:   48 83 ec 10             sub    $0x10,%rsp
+  16:   e8 00 00 00 00          call   1b <main+0xd>
+  1b:   66 0f 7e c0             movd   %xmm0,%eax
+  1f:   89 45 fc                mov    %eax,-0x4(%rbp)
+  22:   b8 00 00 00 00          mov    $0x0,%eax
+  27:   c9                      leave
+  28:   c3                      ret
+            \end{terminalwindow}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 12. Линковка: схема
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Линковка}
+
+    \centering
+
+    \begin{tikzpicture}[node distance=5cm]
+
+        \matrix (objs) [row sep=0.5cm, column sep=0.1cm] {
+            \node (bin1) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ &
+            \node (bin2) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ \\
+            \node (bin3) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ &
+            \node (bin4) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ \\
+        };
+        \node [below=0mm of bin1] { \texttt{*.o} };
+        \node [below=0mm of bin2] { \texttt{*.o} };
+        \node [below=0mm of bin3] { \texttt{*.o} };
+        \node [below=0mm of bin4] { \texttt{*.o} };
+
+        \node (exe) [right=of objs] {
+            \includegraphics[width=1.5cm]
+                {presentations/images/binary-file.png}
+        };
+        \node [below=0mm of exe] { \texttt{ELF} };
+
+
+        \draw[->, ultra thick] (objs.east) -- (exe.west)
+            node[midway, above] {Линковка};
+
+    \end{tikzpicture}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 13. Линковка: пример
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Линковка}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.4\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/}
+                {link-example.h}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/}
+                {link-example.c}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/}
+                {link-example-main.c}
+
+        \end{column}
+
+        \begin{column}{0.6\textwidth}
+
+            \begin{terminalwindow}[||]
+|\shellcommand{gcc -c link-example.c}|
+|\shellcommand{gcc -c link-example-main.c}|
+|\shellcommand{gcc link-example.o link-example-main.o}|
+|\shellcommand{./a.out}|
+Hello!
+|\shellcommand{file a.out}|
+a.out: ELF |\myhighlight{green}{64-bit}| LSB pie executable,
+|\myhighlight{green}{x86-64}|, version 1 (SYSV), dynamically linked,
+interpreter /nix/store/|\dots|/lib/ld-linux-x86-64.so.2,
+for GNU/Linux 3.10.0, not stripped
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 14. Статическая библиотека: создание архива
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Статическая библиотека}
+
+    \centering
+
+    \begin{tikzpicture}[node distance=5cm]
+
+        \matrix (objs) [row sep=0.5cm, column sep=0.1cm] {
+            \node (bin1) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ &
+            \node (bin2) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ \\
+            \node (bin3) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ &
+            \node (bin4) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ \\
+        };
+        \node [below=0mm of bin1] { \texttt{*.o} };
+        \node [below=0mm of bin2] { \texttt{*.o} };
+        \node [below=0mm of bin3] { \texttt{*.o} };
+        \node [below=0mm of bin4] { \texttt{*.o} };
+
+        \node (exe) [right=of objs] {
+            \includegraphics[width=1.5cm]
+                {presentations/images/binary-file.png}
+        };
+        \node [below=0mm of exe] { \texttt{lib*.a} };
+
+
+        \draw[->, ultra thick] (objs.east) -- (exe.west)
+            node[midway, above] {Создание архива};
+
+    \end{tikzpicture}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 15. Статическая библиотека: линковка
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Статическая библиотека}
+
+    \centering
+
+    \begin{tikzpicture}[node distance=5cm]
+
+        \matrix (objs) [row sep=0.5cm, column sep=0.1cm] {
+            \node (bin1) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            }; &
+            \node (bin2) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            }; \\
+            \node (bin3) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            }; &
+            \node (lib) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            }; \\
+        };
+        \node [below=0mm of bin1] { \texttt{*.o} };
+        \node [below=0mm of bin2] { \texttt{*.o} };
+        \node [below=0mm of bin3] { \texttt{*.o} };
+        \node [below=0mm of lib]  { \texttt{lib*.a} };
+
+        \node (exe) [right=of objs] {
+            \includegraphics[width=1.5cm]
+                {presentations/images/binary-file.png}
+        };
+        \node [below=0mm of exe] { \texttt{ELF} };
+
+        \draw[->, ultra thick] (objs.east) -- (exe.west)
+            node[midway, above] {Линковка};
+
+    \end{tikzpicture}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 16. Статическая библиотека: пример
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Статическая библиотека}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.5\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/library/}
+                {main.c}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/library/}
+                {foo.c}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/library/}
+                {bar.c}
+
+        \end{column}
+
+        \begin{column}{0.5\textwidth}
+
+            \begin{terminalwindow}[||]
+|\shellcommand{gcc -c bar.c -o bar.o}|
+|\shellcommand{gcc -c foo.c -o foo.o}|
+|\shellcommand{\myhighlight{green}{ar -r libfoo.a} foo.o bar.o}|
+ar: creating libfoo.a
+|\shellcommand{gcc -c main.c -o main.o}|
+|\shellcommand{gcc main.o \myhighlight{green}{-L\$(pwd) -lfoo} -o main}|
+|\shellcommand{./main}|
+Hello, world!
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 17. Динамическая библиотека: создание
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Динамическая библиотека}
+
+    \centering
+
+    \begin{tikzpicture}[node distance=5cm]
+
+        \matrix (objs) [row sep=0.5cm, column sep=0.1cm] {
+            \node (bin1) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ &
+            \node (bin2) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ \\
+            \node (bin3) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ &
+            \node (bin4) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            };
+ \\
+        };
+        \node [below=0mm of bin1] { \texttt{*.o} };
+        \node [below=0mm of bin2] { \texttt{*.o} };
+        \node [below=0mm of bin3] { \texttt{*.o} };
+        \node [below=0mm of bin4] { \texttt{*.o} };
+
+        \node (exe) [right=of objs] {
+            \includegraphics[width=1.5cm]
+                {presentations/images/binary-file.png}
+        };
+        \node [below=0mm of exe] { \texttt{lib*.so} };
+
+
+        \draw[->, ultra thick] (objs.east) -- (exe.west)
+            node[midway, above, align=center]
+                {Создание динамической\\библиотеки};
+
+    \end{tikzpicture}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 18. Динамическая библиотека: линковка
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Динамическая библиотека}
+
+    \centering
+
+    \begin{tikzpicture}[node distance=5cm]
+
+        \matrix (src) [row sep=0.5cm, column sep=0.1cm] {
+            \node (bin1) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            }; &
+            \node (bin2) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            }; \\
+            \node (bin3) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            }; &
+            \node (lib0) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            }; \\
+        };
+        \node [below=0mm of bin1] { \texttt{*.o} };
+        \node [below=0mm of bin2] { \texttt{*.o} };
+        \node [below=0mm of bin3] { \texttt{*.o} };
+        \node [below=0mm of lib0] { \texttt{lib*.so} };
+
+        \matrix (dst) [row sep=0.5cm, column sep=0.1cm, right=of src] {
+            \node (lib1) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            }; \\
+            \node (exe) {
+                \includegraphics[width=1.5cm]
+                    {presentations/images/binary-file.png}
+            }; \\
+        };
+        \node [below=0mm of exe] { \texttt{executable} };
+        \node [below=0mm of lib1] { \texttt{lib*.so} };
+
+        \draw[->, ultra thick] (src.east) -- (dst.west)
+            node[midway, above, align=center] {Линковка};
+
+    \end{tikzpicture}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 19. Динамическая библиотека: пример
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Динамическая библиотека}
+
+    \begin{columns}[T]
+
+        \begin{column}{0.4\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/library/}
+                {main.c}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/library/}
+                {foo.c}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/library/}
+                {bar.c}
+
+        \end{column}
+
+        \begin{column}{0.6\textwidth}
+
+            \begin{terminalwindow}[||]
+|\shellcommand{gcc -c -fPIC bar.c -o bar.o}|
+|\shellcommand{gcc -c -fPIC foo.c -o foo.o}|
+|\shellcommand{gcc \myhighlight{green}{-shared} bar.o foo.o -o libfoo.so}|
+|\shellcommand{gcc -c main.c -o main.o}|
+|\shellcommand{gcc main.o \myhighlight{green}{-L\$(pwd) -lfoo -Wl,-rpath=\$(pwd)} -o main}|
+|\shellcommand{./main}|
+Hello, world!
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 20. Релокации: постановка проблемы
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Релокации}
+
+    Во время компиляции одной единицы трансляции компилятор
+    не может знать адреса функций, которые не были определены
+    в данной единице трансляции.
+
+    \bigbreak
+
+    % In-place listing: an educational fragment without a file
+    % name, with an explanatory comment; the same code without
+    % the comment is shown on slide 23 (relocations/bar.c).
+    \begin{myinplacelisting}[minted language=c]
+void foo(void);
+
+void bar(void) {
+    // Which address to put in assembly for `foo`?
+    foo();
+}
+    \end{myinplacelisting}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 21. Релокации: что делает компилятор
+% ------------------------------------------------------------------
+
+\begin{frame}
+
+    \frametitle{Релокации}
+
+    На этапе компиляции единицы трансляции компилятор сделает
+    две вещи:
+
+    \begin{enumerate}
+
+        \item В инструкцию \texttt{call} компилятор вместо адреса
+            \texttt{foo} положит нули.
+
+        \item Компилятор создаст \textit{таблицу релокации}
+            в объектном файле, в которой поставит в соответствие
+            адресу первого нуля имя нужной функции.
+
+    \end{enumerate}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 22. Релокации: objdump -dC и -rC
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Релокации}
+
+            \begin{terminalwindow}
+!\shellcommand{gcc -c bar.c}!
+
+!\shellcommand{objdump -dC bar.o}!
+
+0000000000000000 <bar>:
+   0:   55                      push   %rbp
+   1:   48 89 e5                mov    %rsp,%rbp
+   !\myhighlight{green}{4}!:   e8 !\myhighlight{yellow}{00 00 00 00}!          call   9 <bar+0x9>
+   9:   90                      nop
+   a:   5d                      pop    %rbp
+   b:   c3                      ret
+
+!\shellcommand{objdump -rC bar.o}!
+
+RELOCATION RECORDS FOR [.text]:
+OFFSET           TYPE              VALUE
+00000000000000!\myhighlight{green}{05}! R_X86_64_PLT32    foo-0x0000000000000004
+            \end{terminalwindow}
+
+    \bigbreak
+
+    Первый \texttt{00} байт в инструкции \texttt{call} имеет адрес
+    \texttt{5} (\texttt{4}-й адрес занимает opcode инструкции).
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 23. Релокации: работа линковщика
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Релокации}
+
+    На этапе линковки линковщик, используя таблицы релокаций,
+    заполнит все нулевые адреса.
+
+    \begin{columns}[T]
+
+        \begin{column}{0.4\textwidth}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/relocations/}
+                {bar.c}
+
+            \myinputlisting[minted language=c]
+                {presentations/05-translation-phases/src/relocations/}
+                {foo.c}
+
+        \end{column}
+
+        \begin{column}{0.6\textwidth}
+
+            \begin{terminalwindow}
+!\shellcommand{gcc bar.c foo.c -o main}!
+
+!\shellcommand{objdump -dC main}!
+
+0000000000001129 <bar>:
+    1129:       55
+    112a:       48 89 e5
+    112d:       e8 !\myhighlight{yellow}{03 00 00 00}!
+    !\dots!
+
+!\dots!
+
+0000000000001143 <main>:
+    1143:       55
+    1144:       48 89 e5
+    1147:       e8 !\myhighlight{yellow}{dd ff ff ff}!
+    !\dots!
+
+!\dots!
+            \end{terminalwindow}
+
+        \end{column}
+
+    \end{columns}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 24. Релокации: формула адреса
+% ------------------------------------------------------------------
+
+\begin{frame}[fragile]
+
+    \frametitle{Релокации}
+
+    Адрес функции из операнда \texttt{call} считается по формуле:
+
+    \begin{center}
+    \textit{address} = \textit{next} + \textit{operand}
+    \end{center}
+
+    где \textit{next} --- адрес инструкции, следующей за
+    \texttt{call} (\texttt{0x1132}); \textit{operand} --- смещение,
+    записанное в операнде \texttt{call} (\texttt{0x03}).
+
+    \begin{center}
+    \texttt{0x1132} + \texttt{0x03} = \texttt{0x1135}
+    \end{center}
+
+    \bigbreak
+
+            \begin{terminalwindow}
+0000000000001129 <bar>:
+    112d:       e8 !\myhighlight{yellow}{03 00 00 00}!          call   1135 <foo>
+    !\myhighlight{yellow}{1132}!:       90                      nop
+
+000000000000!\myhighlight{green}{1135}! <foo>:
+    !\myhighlight{green}{1135}!:       55                      push   %rbp
+            \end{terminalwindow}
+
+\end{frame}
+
+% ------------------------------------------------------------------
+% Слайд 25. Источники, документация и литература
+% ------------------------------------------------------------------
+
+\begin{frame}
+
+    \frametitle{Источники, документация \\ и литература}
+
+    \begin{itemize}
+
+        \item Статья про фазы трансляции C на cppreference:
+            \url{https://en.cppreference.com/w/c/language/translation_phases}
+
+        \item Перевод статьи Beginner's guide to linkers на Хабре:
+            \url{https://habr.com/ru/articles/150327/}
+
+        \item Цикл статей про архитектуру компьютера с фокусом
+            на выполнение процессов: \url{https://cpu.land/}
+
+        \item Создание статических и динамических библиотек
+            при помощи \texttt{gcc}:
+    \url{https://renenyffenegger.ch/notes/development/languages/C-C-plus-plus/GCC/create-libraries}
+
+    \end{itemize}
+
+\end{frame}
+
+\end{document}
