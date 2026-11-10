@@ -13,7 +13,8 @@ build: \
 	01-intro.pdf \
 	02-c-vs-cpp.pdf \
 	03-storage-duration.pdf \
-	04-c-design.pdf
+	04-c-design.pdf \
+	05-translation-phases.pdf
 
 install: build
 	mkdir -p "$(PREFIX)/presentations"
@@ -21,6 +22,7 @@ install: build
 	cp "$(BUILD_DIR)/02-c-vs-cpp.pdf" "$(PREFIX)/presentations/02-c-vs-cpp.pdf"
 	cp "$(BUILD_DIR)/03-storage-duration.pdf" "$(PREFIX)/presentations/03-storage-duration.pdf"
 	cp "$(BUILD_DIR)/04-c-design.pdf" "$(PREFIX)/presentations/04-c-design.pdf"
+	cp "$(BUILD_DIR)/05-translation-phases.pdf" "$(PREFIX)/presentations/05-translation-phases.pdf"
 
 clean:
 	rm -rf $(BUILD_DIR)
@@ -35,6 +37,7 @@ help:
 	@printf "02-c-vs-cpp.pdf\tbuild presentation 02-c-vs-cpp.pdf\n"
 	@printf "03-storage-duration.pdf\tbuild presentation 03-storage-duration.pdf\n"
 	@printf "04-c-design.pdf\tbuild presentation 04-c-design.pdf\n"
+	@printf "05-translation-phases.pdf\tbuild presentation 05-translation-phases.pdf\n"
 
 define generate_pdf
 	TEXINPUTS='$(shell pwd)//:' \
@@ -79,4 +82,12 @@ endef
 	presentations/04-c-design/04-c-design.tex \
 	$(wildcard presentations/04-c-design/src/*.c) \
 	$(wildcard presentations/04-c-design/src/*.h)
+	$(call generate_pdf,$<,$@)
+
+05-translation-phases.pdf: \
+	presentations/05-translation-phases/05-translation-phases.tex \
+	$(wildcard presentations/05-translation-phases/src/*.c) \
+	$(wildcard presentations/05-translation-phases/src/*.h) \
+	$(wildcard presentations/05-translation-phases/src/library/*.c) \
+	$(wildcard presentations/05-translation-phases/src/relocations/*.c)
 	$(call generate_pdf,$<,$@)
